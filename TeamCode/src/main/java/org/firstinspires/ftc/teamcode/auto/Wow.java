@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -17,7 +18,7 @@ public class Wow extends LinearOpMode {
     public void display() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         WebcamName webcamName = null;
-        webcamName = hardwareMap.get(WebcamName.class, "Webcam"); // put your camera's name here
+        webcamName = hardwareMap.get(WebcamName.class, "Webcam 1"); // put your camera's name here
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         PixelDetect pipe = new PixelDetect();
 
@@ -31,7 +32,6 @@ public class Wow extends LinearOpMode {
             @Override
             public void onError(int errorCode) {
                 telemetry.addData("Camera Failed", "");
-
                 telemetry.update();
             }
         });
