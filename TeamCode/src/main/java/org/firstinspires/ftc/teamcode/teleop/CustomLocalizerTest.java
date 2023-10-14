@@ -36,7 +36,7 @@ public class CustomLocalizerTest extends LinearOpMode {
             double driveY = Math.pow(-gamepad2.left_stick_x, 3);
             double driveX = Math.pow(-gamepad2.left_stick_y, 3);
             drive.drive(0.5 * Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), 0.5 * driveTurn, 1);
-//            drive.driveTest();
+//            drive.driveTest(0.5);
 
 //            localizer.update();
 

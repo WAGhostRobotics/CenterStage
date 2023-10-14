@@ -1,371 +1,371 @@
-package org.firstinspires.ftc.teamcode.library.autoDrive;
-
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeDegrees;
-
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.localization.Localizer;
-import com.arcrobotics.ftclib.controller.PIDController;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.teamcode.library.autoDrive.math.Bezier;
-import org.firstinspires.ftc.teamcode.library.autoDrive.math.MergedBezier;
-import org.firstinspires.ftc.teamcode.library.autoDrive.math.Point;
-import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
-import org.firstinspires.ftc.teamcode.library.drivetrain.swerveDrive.Swerve;
-
-@Config
-public class MotionPlanner {
-
-    private Bezier spline;
-    private double targetHeading;
-
-    private Drivetrain drive;
-    private Localizer localizer;
-
-    //    private PIDController translationalControl = new PIDController(0.022,0.001,0.03);
-    public static PIDController translationalControl = new PIDController(0,0,0);
-    public static PIDController headingControl = new PIDController(0, 0, 0);
-
-    //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
-//    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
-    public static PIDController translationalControlEndX = new PIDController(0.02,0,0.5);
-    public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
-    public static PIDController headingControlEnd = new PIDController(0.001, 0.02, 0.1); //i=0.0226
-
-
-    private int index;
-    private double x;
-    private double y;
-    private double theta;
-    private double magnitude;
-    private double driveTurn;
-    private double x_power;
-    private double y_power;
-    private double x_rotated;
-    private double y_rotated;
-    private double currentHeading;
-
-
-    double y1;
-    double y2;
-
-    private double velocity;
-
-    double lasty;
-    double lasty1;
-    double lastx;
-
-    double currentY;
-    double currentX;
-
-    double radius;
-    public final double THE_HOLY_CONSTANT = 0.00006; //0.001
-
-    double ac;
-
-    double numLoops;
-    ElapsedTime loopTime;
-
-
-    private final double movementPower = 0.85;
-    public static double kStatic = 0.31; //.19
-    private final double translational_error = 1;
-    private final double heading_error = 3;
-    private final double endTrajThreshhold = 18;
-    public static final double tIncrement = 0.05;
-
-
-    boolean end = false;
-
-    private ElapsedTime ACtimer;
-
-    private int estimatedStopping;
-
-    Point target;
-    Point derivative;
-
-    double perpendicularError;
-
-
-    HardwareMap hwMap;
-
-    double voltage = 0;
-
-    public MotionPlanner(Swerve drive, Localizer localizer, HardwareMap hwMap){
-
-        this.drive = drive;
-        this.localizer = localizer;
-        this.hwMap = hwMap;
-
-
-    }
-
-    public void reset(){
-        ACtimer = new ElapsedTime();
-
-        translationalControl.reset();
-        headingControl.reset();
-
-        voltage = hwMap.voltageSensor.iterator().next().getVoltage();
-
-        numLoops = 0;
-        loopTime = new ElapsedTime();
-
-        double length = spline.approximateLength();
-        estimatedStopping = (int)(((length - endTrajThreshhold)/length)/tIncrement);
-
-        index = 0;
-    }
-
-    public void startTrajectory(Bezier spline) {
-        this.spline = spline;
-        reset();
-    }
-
-    public void startTrajectory(Bezier... splines) {
-        this.spline = new MergedBezier(splines);
-        reset();
-    }
-
-    public Bezier getSpline(){
-        return spline;
-    }
-
-
-    public String getTelemetry(){
-        return "Index: " + index +
-                "\n Theta: " + theta +
-                "\n Magnitude: " + magnitude +
-                "\n Driveturn: " + driveTurn +
-//                "\n Phase: " + end +
-//                "\n Stop " + (distanceLeft < estimatedStopping) +
-//                "\n Distance left: " + distanceLeft +
-//                "\n Distance left (x): " + (spline.getEndPoint().getX()-x) +
-//                "\n Distance left (y): " + (spline.getEndPoint().getY()-y) +
-//                "\n Perpendicular error: " + (perpendicularError) +
-//                "\n Heading: " + (heading - currentHeading) +
-                "\n Estimated Stopping " + estimatedStopping +
-//                "\n " + drive.getTelemetry() +
-                "\n Finished " + isFinished()+
-                "\n Loop Rate " + numLoops/loopTime.seconds();
-    }
-
-    public double getPerpendicularError(){
-        return perpendicularError;
-    }
-
-
-    public double getHeadingError(){
-        double headingError = targetHeading - currentHeading;
-
-        if(headingError > 180){
-            headingError -= 360;
-        }else if(headingError<-180){
-            headingError += 360;
-        }
-
-        return headingError;
-    }
-
-    public void update() {
-
-        localizer.update();
-        updateACValues();
-
-        x = localizer.getX();
-        y = localizer.getY();
-        currentHeading = normalizeDegrees(localizer.getHeading(Localizer.Angle.DEGREES));
-
-
-
-        while(index <= estimatedStopping && distance(spline.getCurvePoints()[index+1], new Point(x, y))<
-                distance(spline.getCurvePoints()[index], new Point(x, y))){
-            index ++;
-        }
-
-        target = spline.getCurvePoints()[index];
-        targetHeading = spline.getCurveHeadings()[index];
-        derivative = spline.getCurveDerivatives()[index];
-
-
-        if(!isFinished()){
-
-
-            if(index >=estimatedStopping){
-
-
-                if(!end){
-                    translationalControlEndX.reset();
-                    translationalControlEndY.reset();
-                    headingControlEnd.reset();
-                }
-
-                end = true;
-
-
-                x_power = translationalControlEndX.calculate(0, spline.getEndPoint().getX()-x);
-                y_power = translationalControlEndY.calculate(0, spline.getEndPoint().getY()-y);
-
-                x_power = (!reachedXTarget()) ? (x_power + Math.signum(x_power) * kStatic): 0;
-                y_power = (!reachedYTarget()) ? (y_power + Math.signum(y_power) * kStatic): 0;
-
-
-                x_rotated = x_power * Math.cos(Math.toRadians(currentHeading)) + y_power * Math.sin(Math.toRadians(currentHeading));
-                y_rotated =  -x_power * Math.sin(Math.toRadians(currentHeading)) + y_power * Math.cos(Math.toRadians(currentHeading));
-
-
-
-                magnitude = Math.hypot(x_rotated, y_rotated);
-                theta = Math.toDegrees(Math.atan2(y_rotated, x_rotated));
-                driveTurn = headingControlEnd.calculate(0, getHeadingError());
-
-                driveTurn = (!reachedHeadingTarget()) ? (driveTurn + Math.signum(driveTurn) * kStatic): 0;
-
-                drive.drive(magnitude, theta, driveTurn, movementPower, voltage);
-
-
-            } else {
-
-                end = false;
-
-                magnitude = 1;
-
-                double vy = derivative.getY();
-                double vx = derivative.getX();
-
-                theta = Math.toDegrees(Math.atan2(vy, vx));
-
-
-                double correction;
-                double multiplier = 1;
-
-                if(vx == 0){
-
-
-                    perpendicularError = target.getX() - x;
-
-
-                    if(vy<0){
-                        multiplier = -1;
-                    }
-
-
-                }else{
-                    double slope = vy/vx;
-                    double yIntTarget = (target.getY() - (slope)*(target.getX()));
-                    double yIntReal = (y - (slope)*x);
-
-                    perpendicularError = Math.abs(yIntTarget-yIntReal)/Math.sqrt(1 + Math.pow(slope, 2));
-                    perpendicularError = Math.signum(normalizeDegrees(theta-90)) * perpendicularError;
-
-                    if(yIntTarget <= yIntReal){
-                        multiplier = -1;
-                    }
-
-                }
-                perpendicularError *= multiplier;
-                correction = translationalControl.calculate(0, perpendicularError);
-                theta -= Math.toDegrees(Math.atan2(correction, magnitude));
-                magnitude = Math.hypot(magnitude, correction);
-
-
-                x_power = magnitude * Math.cos(Math.toRadians(theta));
-                y_power = magnitude * Math.sin(Math.toRadians(theta));
-
-
-
-                x_rotated = x_power * Math.cos(Math.toRadians(currentHeading)) + y_power * Math.sin(Math.toRadians(currentHeading));
-                y_rotated = -x_power * Math.sin(Math.toRadians(currentHeading)) + y_power * Math.cos(Math.toRadians(currentHeading));
-
-                magnitude = Math.hypot(x_rotated, y_rotated);
-                theta = Math.toDegrees(Math.atan2(y_rotated, x_rotated));
-                driveTurn = headingControl.calculate(0, getHeadingError());
-
-
-                if(!Double.isNaN(y1)&&!Double.isNaN(y2) && magnitude != 0){
-                    radius = Math.pow((1+Math.pow(y1,2)), 1.5)/y2;
-                    ac = Math.pow(velocity, 2)/radius;
-                    theta += Math.toDegrees(Math.atan2( ac*THE_HOLY_CONSTANT, 1));
-                    magnitude *= Math.hypot(1, ac*THE_HOLY_CONSTANT);
-
-                }else{
-                    ac = 0;
-                }
-
-                drive.driveMax(magnitude, theta, driveTurn, movementPower, voltage);
-            }
-
-        }else{
-            if(reachedXTarget()){
-                translationalControlEndX.reset();
-            }
-
-            if(reachedYTarget()){
-                translationalControlEndY.reset();
-            }
-
-            if(reachedHeadingTarget()){
-                headingControlEnd.reset();
-            }
-
-            drive.drive(0, 0, 0, 0);
-        }
-
-        numLoops++;
-    }
-
-    public void updateACValues(){
-        currentX = -localizer.getRawY();
-        currentY = localizer.getRawX();
-
-        if((currentX-lastx) == 0){
-            y1 = Double.NaN;
-            y2 = Double.NaN;
-        }else{
-            y1 = (currentY-lasty)/(currentX-lastx);
-            y2 = (y1-lasty1)/(currentX-lastx);
-        }
-
-
-        double ACtime = ACtimer.seconds();
-
-        velocity = Math.sqrt(
-                Math.pow(((currentX-lastx)/ACtime), 2) + Math.pow(((currentY-lasty)/ACtime), 2)
-        );
-
-        lasty1 = y1;
-        lastx = currentX;
-        lasty = currentY;
-
-
-
-        ACtimer.reset();
-
-
-    }
-
-    public boolean isFinished() {
-        return  reachedTranslationalTarget() && reachedHeadingTarget();
-    }
-
-    private boolean reachedTranslationalTarget(){
-        return (reachedXTarget() && reachedYTarget());
-    }
-
-    private boolean reachedXTarget(){
-        return Math.abs(spline.getEndPoint().getX()-x)<= translational_error;
-    }
-
-    private boolean reachedYTarget(){
-        return Math.abs(spline.getEndPoint().getY()-y)<= translational_error;
-    }
-
-    private boolean reachedHeadingTarget(){
-        return (Math.abs(targetHeading - currentHeading)<= heading_error);
-    }
-
-    private double distance(Point p1, Point p2){
-        return Math.hypot(p1.getX()-p2.getX(), p1.getY()-p2.getY());
-    }
-}
+//package org.firstinspires.ftc.teamcode.library.autoDrive;
+//
+//import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeDegrees;
+//
+//import com.acmerobotics.dashboard.config.Config;
+//import com.acmerobotics.roadrunner.localization.Localizer;
+//import com.arcrobotics.ftclib.controller.PIDController;
+//import com.qualcomm.robotcore.hardware.HardwareMap;
+//import com.qualcomm.robotcore.util.ElapsedTime;
+//
+//import org.firstinspires.ftc.teamcode.library.autoDrive.math.Bezier;
+//import org.firstinspires.ftc.teamcode.library.autoDrive.math.MergedBezier;
+//import org.firstinspires.ftc.teamcode.library.autoDrive.math.Point;
+//import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
+//import org.firstinspires.ftc.teamcode.library.drivetrain.swerveDrive.Swerve;
+//
+//@Config
+//public class MotionPlanner {
+//
+//    private Bezier spline;
+//    private double targetHeading;
+//
+//    private Drivetrain drive;
+//    private Localizer localizer;
+//
+//    //    private PIDController translationalControl = new PIDController(0.022,0.001,0.03);
+//    public static PIDController translationalControl = new PIDController(0,0,0);
+//    public static PIDController headingControl = new PIDController(0, 0, 0);
+//
+//    //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
+////    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
+//    public static PIDController translationalControlEndX = new PIDController(0.02,0,0.5);
+//    public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
+//    public static PIDController headingControlEnd = new PIDController(0.001, 0.02, 0.1); //i=0.0226
+//
+//
+//    private int index;
+//    private double x;
+//    private double y;
+//    private double theta;
+//    private double magnitude;
+//    private double driveTurn;
+//    private double x_power;
+//    private double y_power;
+//    private double x_rotated;
+//    private double y_rotated;
+//    private double currentHeading;
+//
+//
+//    double y1;
+//    double y2;
+//
+//    private double velocity;
+//
+//    double lasty;
+//    double lasty1;
+//    double lastx;
+//
+//    double currentY;
+//    double currentX;
+//
+//    double radius;
+//    public final double THE_HOLY_CONSTANT = 0.00006; //0.001
+//
+//    double ac;
+//
+//    double numLoops;
+//    ElapsedTime loopTime;
+//
+//
+//    private final double movementPower = 0.85;
+//    public static double kStatic = 0.31; //.19
+//    private final double translational_error = 1;
+//    private final double heading_error = 3;
+//    private final double endTrajThreshhold = 18;
+//    public static final double tIncrement = 0.05;
+//
+//
+//    boolean end = false;
+//
+//    private ElapsedTime ACtimer;
+//
+//    private int estimatedStopping;
+//
+//    Point target;
+//    Point derivative;
+//
+//    double perpendicularError;
+//
+//
+//    HardwareMap hwMap;
+//
+//    double voltage = 0;
+//
+//    public MotionPlanner(Swerve drive, Localizer localizer, HardwareMap hwMap){
+//
+//        this.drive = drive;
+//        this.localizer = localizer;
+//        this.hwMap = hwMap;
+//
+//
+//    }
+//
+//    public void reset(){
+//        ACtimer = new ElapsedTime();
+//
+//        translationalControl.reset();
+//        headingControl.reset();
+//
+//        voltage = hwMap.voltageSensor.iterator().next().getVoltage();
+//
+//        numLoops = 0;
+//        loopTime = new ElapsedTime();
+//
+//        double length = spline.approximateLength();
+//        estimatedStopping = (int)(((length - endTrajThreshhold)/length)/tIncrement);
+//
+//        index = 0;
+//    }
+//
+//    public void startTrajectory(Bezier spline) {
+//        this.spline = spline;
+//        reset();
+//    }
+//
+//    public void startTrajectory(Bezier... splines) {
+//        this.spline = new MergedBezier(splines);
+//        reset();
+//    }
+//
+//    public Bezier getSpline(){
+//        return spline;
+//    }
+//
+//
+//    public String getTelemetry(){
+//        return "Index: " + index +
+//                "\n Theta: " + theta +
+//                "\n Magnitude: " + magnitude +
+//                "\n Driveturn: " + driveTurn +
+////                "\n Phase: " + end +
+////                "\n Stop " + (distanceLeft < estimatedStopping) +
+////                "\n Distance left: " + distanceLeft +
+////                "\n Distance left (x): " + (spline.getEndPoint().getX()-x) +
+////                "\n Distance left (y): " + (spline.getEndPoint().getY()-y) +
+////                "\n Perpendicular error: " + (perpendicularError) +
+////                "\n Heading: " + (heading - currentHeading) +
+//                "\n Estimated Stopping " + estimatedStopping +
+////                "\n " + drive.getTelemetry() +
+//                "\n Finished " + isFinished()+
+//                "\n Loop Rate " + numLoops/loopTime.seconds();
+//    }
+//
+//    public double getPerpendicularError(){
+//        return perpendicularError;
+//    }
+//
+//
+//    public double getHeadingError(){
+//        double headingError = targetHeading - currentHeading;
+//
+//        if(headingError > 180){
+//            headingError -= 360;
+//        }else if(headingError<-180){
+//            headingError += 360;
+//        }
+//
+//        return headingError;
+//    }
+//
+//    public void update() {
+//
+//        localizer.update();
+//        updateACValues();
+//
+//        x = localizer.getX();
+//        y = localizer.getY();
+//        currentHeading = normalizeDegrees(localizer.getHeading(Localizer.Angle.DEGREES));
+//
+//
+//
+//        while(index <= estimatedStopping && distance(spline.getCurvePoints()[index+1], new Point(x, y))<
+//                distance(spline.getCurvePoints()[index], new Point(x, y))){
+//            index ++;
+//        }
+//
+//        target = spline.getCurvePoints()[index];
+//        targetHeading = spline.getCurveHeadings()[index];
+//        derivative = spline.getCurveDerivatives()[index];
+//
+//
+//        if(!isFinished()){
+//
+//
+//            if(index >=estimatedStopping){
+//
+//
+//                if(!end){
+//                    translationalControlEndX.reset();
+//                    translationalControlEndY.reset();
+//                    headingControlEnd.reset();
+//                }
+//
+//                end = true;
+//
+//
+//                x_power = translationalControlEndX.calculate(0, spline.getEndPoint().getX()-x);
+//                y_power = translationalControlEndY.calculate(0, spline.getEndPoint().getY()-y);
+//
+//                x_power = (!reachedXTarget()) ? (x_power + Math.signum(x_power) * kStatic): 0;
+//                y_power = (!reachedYTarget()) ? (y_power + Math.signum(y_power) * kStatic): 0;
+//
+//
+//                x_rotated = x_power * Math.cos(Math.toRadians(currentHeading)) + y_power * Math.sin(Math.toRadians(currentHeading));
+//                y_rotated =  -x_power * Math.sin(Math.toRadians(currentHeading)) + y_power * Math.cos(Math.toRadians(currentHeading));
+//
+//
+//
+//                magnitude = Math.hypot(x_rotated, y_rotated);
+//                theta = Math.toDegrees(Math.atan2(y_rotated, x_rotated));
+//                driveTurn = headingControlEnd.calculate(0, getHeadingError());
+//
+//                driveTurn = (!reachedHeadingTarget()) ? (driveTurn + Math.signum(driveTurn) * kStatic): 0;
+//
+//                drive.drive(magnitude, theta, driveTurn, movementPower, voltage);
+//
+//
+//            } else {
+//
+//                end = false;
+//
+//                magnitude = 1;
+//
+//                double vy = derivative.getY();
+//                double vx = derivative.getX();
+//
+//                theta = Math.toDegrees(Math.atan2(vy, vx));
+//
+//
+//                double correction;
+//                double multiplier = 1;
+//
+//                if(vx == 0){
+//
+//
+//                    perpendicularError = target.getX() - x;
+//
+//
+//                    if(vy<0){
+//                        multiplier = -1;
+//                    }
+//
+//
+//                }else{
+//                    double slope = vy/vx;
+//                    double yIntTarget = (target.getY() - (slope)*(target.getX()));
+//                    double yIntReal = (y - (slope)*x);
+//
+//                    perpendicularError = Math.abs(yIntTarget-yIntReal)/Math.sqrt(1 + Math.pow(slope, 2));
+//                    perpendicularError = Math.signum(normalizeDegrees(theta-90)) * perpendicularError;
+//
+//                    if(yIntTarget <= yIntReal){
+//                        multiplier = -1;
+//                    }
+//
+//                }
+//                perpendicularError *= multiplier;
+//                correction = translationalControl.calculate(0, perpendicularError);
+//                theta -= Math.toDegrees(Math.atan2(correction, magnitude));
+//                magnitude = Math.hypot(magnitude, correction);
+//
+//
+//                x_power = magnitude * Math.cos(Math.toRadians(theta));
+//                y_power = magnitude * Math.sin(Math.toRadians(theta));
+//
+//
+//
+//                x_rotated = x_power * Math.cos(Math.toRadians(currentHeading)) + y_power * Math.sin(Math.toRadians(currentHeading));
+//                y_rotated = -x_power * Math.sin(Math.toRadians(currentHeading)) + y_power * Math.cos(Math.toRadians(currentHeading));
+//
+//                magnitude = Math.hypot(x_rotated, y_rotated);
+//                theta = Math.toDegrees(Math.atan2(y_rotated, x_rotated));
+//                driveTurn = headingControl.calculate(0, getHeadingError());
+//
+//
+//                if(!Double.isNaN(y1)&&!Double.isNaN(y2) && magnitude != 0){
+//                    radius = Math.pow((1+Math.pow(y1,2)), 1.5)/y2;
+//                    ac = Math.pow(velocity, 2)/radius;
+//                    theta += Math.toDegrees(Math.atan2( ac*THE_HOLY_CONSTANT, 1));
+//                    magnitude *= Math.hypot(1, ac*THE_HOLY_CONSTANT);
+//
+//                }else{
+//                    ac = 0;
+//                }
+//
+//                drive.driveMax(magnitude, theta, driveTurn, movementPower, voltage);
+//            }
+//
+//        }else{
+//            if(reachedXTarget()){
+//                translationalControlEndX.reset();
+//            }
+//
+//            if(reachedYTarget()){
+//                translationalControlEndY.reset();
+//            }
+//
+//            if(reachedHeadingTarget()){
+//                headingControlEnd.reset();
+//            }
+//
+//            drive.drive(0, 0, 0, 0);
+//        }
+//
+//        numLoops++;
+//    }
+//
+//    public void updateACValues(){
+//        currentX = -localizer.getRawY();
+//        currentY = localizer.getRawX();
+//
+//        if((currentX-lastx) == 0){
+//            y1 = Double.NaN;
+//            y2 = Double.NaN;
+//        }else{
+//            y1 = (currentY-lasty)/(currentX-lastx);
+//            y2 = (y1-lasty1)/(currentX-lastx);
+//        }
+//
+//
+//        double ACtime = ACtimer.seconds();
+//
+//        velocity = Math.sqrt(
+//                Math.pow(((currentX-lastx)/ACtime), 2) + Math.pow(((currentY-lasty)/ACtime), 2)
+//        );
+//
+//        lasty1 = y1;
+//        lastx = currentX;
+//        lasty = currentY;
+//
+//
+//
+//        ACtimer.reset();
+//
+//
+//    }
+//
+//    public boolean isFinished() {
+//        return  reachedTranslationalTarget() && reachedHeadingTarget();
+//    }
+//
+//    private boolean reachedTranslationalTarget(){
+//        return (reachedXTarget() && reachedYTarget());
+//    }
+//
+//    private boolean reachedXTarget(){
+//        return Math.abs(spline.getEndPoint().getX()-x)<= translational_error;
+//    }
+//
+//    private boolean reachedYTarget(){
+//        return Math.abs(spline.getEndPoint().getY()-y)<= translational_error;
+//    }
+//
+//    private boolean reachedHeadingTarget(){
+//        return (Math.abs(targetHeading - currentHeading)<= heading_error);
+//    }
+//
+//    private double distance(Point p1, Point p2){
+//        return Math.hypot(p1.getX()-p2.getX(), p1.getY()-p2.getY());
+//    }
+//}
