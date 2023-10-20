@@ -19,7 +19,8 @@ public class ModuleV2 {
     private CRServo pivot;
     private AnalogEncoder encoder;
 
-    private int motorMultiplier = 1;
+//    private int motorMultiplier = 1;
+    private boolean changedMultiplier = false;
 
     private double targetAngle;
 
@@ -60,7 +61,9 @@ public class ModuleV2 {
 
     public void setPower(double power){
 //        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motor.setPower(motorMultiplier * power);
+        if (changedMultiplier) power *= -1;
+//        motor.setPower(motorMultiplier * power);
+        motor.setPower(power);
     }
 
     public void setHold() {
@@ -77,6 +80,8 @@ public class ModuleV2 {
             headingController.reset();
             targetAngle = normalizeDegrees(angle);
         }
+//        headingController.reset();
+//        targetAngle = normalizeDegrees(angle);
     }
 
     public AnalogEncoder getEncoder(){
@@ -84,11 +89,11 @@ public class ModuleV2 {
     }
 
     public double getTargetAngle(){
-        return normalizeDegrees(targetAngle);
+        return normalizeDegrees(targetAngle-180);
     }
 
     public double getModuleAngle(){
-        return normalizeDegrees(Math.toDegrees(encoder.getCurrentPosition()));
+        return normalizeDegrees(Math.toDegrees(encoder.getCurrentPosition())-180);
     }
 
     public double getModuleCurrent() {
@@ -100,7 +105,8 @@ public class ModuleV2 {
     }
 
     public int getMotorMultiplier() {
-        return motorMultiplier;
+        return 1;
+//        return motorMultiplier;
     }
 
     public double getPower(){
@@ -122,20 +128,25 @@ public class ModuleV2 {
 
         if(Math.abs(error)>90.0){
             target = normalizeDegrees(target - 180.0);
-            motorMultiplier = -1;
-        }else {
-            motorMultiplier = 1;
+            changedMultiplier = true;
+//            setTargetAngle(target);
+//            motorMultiplier = -1;
+        }
+        else {
+            changedMultiplier = false;
+//            motorMultiplier = 1;
         }
 
         error = normalizeDegrees(target - angle);
 
         power = Range.clip(headingController.calculate(0, error), -1, 1);
-        pivot.setPower(power);
 
         if(Double.isNaN(power)) power = 0;
 
         if(Math.abs(error)<=PERMISSABLE_ERROR) {
             power = 0;
         }
+
+        pivot.setPower(power);
     }
 }

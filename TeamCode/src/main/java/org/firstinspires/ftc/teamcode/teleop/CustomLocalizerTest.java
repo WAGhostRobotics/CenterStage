@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-//import com.outoftheboxrobotics.photoncore.PhotonCore;
+//import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -14,6 +14,8 @@ import org.firstinspires.ftc.teamcode.library.drivetrain.swerveDrive.Swerve;
  * exercise is to ascertain whether the localizer has been configured properly (note: the pure
  * encoder localizer heading may be significantly off if the track width has not been tuned).
  */
+
+//@Photon
 @TeleOp(group = "drive")
 public class CustomLocalizerTest extends LinearOpMode {
     @Override
@@ -22,8 +24,6 @@ public class CustomLocalizerTest extends LinearOpMode {
 
 //        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
         Swerve drive = new Swerve(hardwareMap);
-
-//        PhotonCore.enable();
 
         waitForStart();
 
@@ -35,7 +35,7 @@ public class CustomLocalizerTest extends LinearOpMode {
             double driveTurn = Math.pow(-gamepad2.right_stick_x, 3);
             double driveY = Math.pow(-gamepad2.left_stick_x, 3);
             double driveX = Math.pow(-gamepad2.left_stick_y, 3);
-            drive.drive(0.5 * Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), 0.5 * driveTurn, 1);
+            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, 0.8);
 //            drive.driveTest(0.5);
 
 //            localizer.update();

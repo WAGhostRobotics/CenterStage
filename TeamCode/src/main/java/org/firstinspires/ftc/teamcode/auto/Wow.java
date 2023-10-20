@@ -41,10 +41,7 @@ public class Wow extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         waitForStart();
         display();
-        while (!isStarted() && !isStopRequested()) {
-
-        }
-
+        while (!isStarted() && !isStopRequested());
         webcam.stopStreaming();
     }
 }

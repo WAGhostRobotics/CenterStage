@@ -25,13 +25,22 @@ android {
 
 repositories {
     maven { url = 'https://jitpack.io' }
+
+//    dependencyResolutionManagement {
+//        repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+//        repositories {
+//            mavenCentral()
+//            maven { url 'https://jitpack.io' }
+//        }
+//    }
 }
 
 dependencies {
     implementation project(':FtcRobotController')
     implementation 'org.ftclib.ftclib:core:2.1.1' // core
     implementation 'com.acmerobotics.roadrunner:core:0.5.6'
-//    implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:v3.0.0-Alpha'
+//    implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:v3.0.0-ALPHA'
+    implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:main-SNAPSHOT'
 
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.library.drivetrain.swerveDrive;
 
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeDegrees;
+
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -181,7 +183,8 @@ public class Swerve implements Drivetrain {
 
     }
 
-    public void driveTest(double power) {
+    public void driveTest(double magnitude, double power) {
+        driveCommon(1, 0, 0);
         frontLeft.setPower(-power);
         frontRight.setPower(power);
         backLeft.setPower(-power);
@@ -226,10 +229,14 @@ public class Swerve implements Drivetrain {
                 + "Front Left: " + frontLeft.getTargetAngle() + "\n"
                 + "Front Right: " + frontRight.getTargetAngle() + "\n"
                 + "Back Left: " + backLeft.getTargetAngle() + "\n"
-                + "Back Right: " + backRight.getTargetAngle()
+                + "Back Right: " + backRight.getTargetAngle() + "\n"
                 + "FL: " + frontLeft.getModuleAngle() + "\n"
                 + "FR: " + frontRight.getModuleAngle() + "\n"
                 + "BL: " + backLeft.getModuleAngle() + "\n"
-                + "BR: " + backRight.getModuleAngle();
+                + "BR: " + backRight.getModuleAngle() + "\n"
+                + "FL error: " + normalizeDegrees(frontLeft.getTargetAngle() - frontLeft.getModuleAngle()) + "\n"
+                + "FR error: " + normalizeDegrees(frontRight.getTargetAngle() - frontRight.getModuleAngle()) + "\n"
+                + "BL error: " + normalizeDegrees(backLeft.getTargetAngle() - backLeft.getModuleAngle()) + "\n"
+                + "BR error: " + normalizeDegrees(backRight.getTargetAngle() - backRight.getModuleAngle());
     }
 }
