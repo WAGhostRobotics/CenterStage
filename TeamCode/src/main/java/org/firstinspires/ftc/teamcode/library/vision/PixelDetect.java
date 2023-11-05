@@ -1,21 +1,26 @@
 package org.firstinspires.ftc.teamcode.library.vision;
 
 import org.opencv.core.Core;
+import org.opencv.core.Point;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PixelDetect extends OpenCvPipeline {
-    Mat mat = new Mat();
+    private Mat mat = new Mat();
+    private Point center = new Point(0, 0);
+    private double contourArea = 0;
 
     //Threshold to determine if there is an object
+    //TODO: replace with contour area instead?
     final static double PERCENT_COLOR_THRESHOLD = 0.1;
 
     @Override
@@ -23,47 +28,66 @@ public class PixelDetect extends OpenCvPipeline {
         Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
 
         //Hue, Saturation, Value ranges
-        Scalar lowHSV = new Scalar(12, 180, 130);//change color HSV
-        Scalar highHSV = new Scalar(26, 255, 255);//change color HSV
+        Scalar lowHSV = new Scalar(0, 0, 172);//change color HSV
+        Scalar highHSV = new Scalar(255, 32, 255);//change color HSV
 
-
-        //creats submatrices
+        //creates submatrices
         Core.inRange(mat, lowHSV, highHSV, mat);
-
 
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
 
-        Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        int largestContourIdx = 0;
 
-        for ( int contourIdx=0; contourIdx < contours.size(); contourIdx++ )
-        {
-            //Minimun size allowed for consideration
-            MatOfPoint2f approxCurve = new MatOfPoint2f();
-            MatOfPoint2f contour2f = new MatOfPoint2f(contours.get(contourIdx).toArray());
+        //TODO: choose between RETR_EXTERNAL and RETR_TREE
+        Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
-            //Processing on mMOP2f1 which is in type MatOfPoint2f
-            double approxDistance = Imgproc.arcLength(contour2f,true)*0.02;
-            Imgproc.approxPolyDP(contour2f,approxCurve,approxDistance,true);
+        //skips contour calculations if there are no contours
+        if (contours.size() == 0) {
+            contourArea = 0;
+            hierarchy.release();
 
-            //convert to MatofPoint
-            MatOfPoint point = new MatOfPoint(approxCurve.toArray());
+            //stuff to make the gray scale appear on on robot phone
+            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB);
 
-            //get boundingrect from contour
-            Rect rect = Imgproc.boundingRect(point);
-
-
-            Imgproc.rectangle(mat,rect, new Scalar(255, 0, 0),3);
-            //bisa Imgproc.rectangle(mRgba, rect.tl(), rect.br(), new Scalar(255, 0, 0),1, 8,0);
-
+            return mat;
         }
 
-        hierarchy.release();
+        //finds the largest contour
+        for (int contourIdx=0; contourIdx < contours.size(); contourIdx++) {
+            if (Imgproc.contourArea(contours.get(contourIdx)) > Imgproc.contourArea(contours.get(largestContourIdx))) {
+                largestContourIdx = contourIdx;
+            }
+        }
 
+        contourArea = Imgproc.contourArea(contours.get(largestContourIdx));
+
+//        //gets bounding rectangle and center from contour
+//        Rect rect = Imgproc.boundingRect(contours.get(largestContourIdx));
+//        center = new Point(rect.x+(rect.width/2.0), rect.y+(rect.height/2.0));
+
+        //gets moments and center from contour
+        Moments moments = Imgproc.moments(contours.get(largestContourIdx));
+        center = new Point(moments.get_m10() / moments.get_m00(), moments.get_m01() / moments.get_m00());
+
+        hierarchy.release();
 
         //stuff to make the gray scale appear on on robot phone
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB);
 
+        //drawing features onto the matrix
+        Imgproc.drawContours(mat, contours, largestContourIdx, new Scalar(255, 0, 0), 3);
+        Imgproc.circle(mat, center, 5, new Scalar(255,0,0), 3);
+        // Imgproc.rectangle(mat,rect, new Scalar(255, 0, 0),3);
+
         return mat;
+    }
+
+    public double getContourArea() {
+        return contourArea;
+    }
+
+    public Point getCenter() {
+        return center;
     }
 }
