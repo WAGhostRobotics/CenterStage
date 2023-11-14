@@ -17,39 +17,43 @@ public class SpikeDetect extends OpenCvPipeline {
     Scalar lowHSV;
     Scalar highHSV;
 
+    //HSV Ranges for red and blue
+    //TODO: tune if necessary
     public SpikeDetect(boolean redAlliance) {
         if (redAlliance) {
-            lowHSV = new Scalar(235, 200, 200);
+            lowHSV = new Scalar(0, 128, 100);
             highHSV = new Scalar(20, 255, 255);
         } else {
-            lowHSV = new Scalar(150, 200, 200);
-            highHSV = new Scalar(190, 255, 255);
+            lowHSV = new Scalar(110, 200, 50);
+            highHSV = new Scalar(130, 255, 255);
         }
     }
 
     //locations
     public enum Location {
         LEFT,
-        RIGHT,
-        MID
+        MID,
+        RIGHT
     }
 
     double leftValue;
     double midValue;
+    double rightValue;
 
     //location
-    private Location location = Location.RIGHT;
+    private Location location;
 
     //Region of interest coordinates
-    public static final Rect MID_ROI = new Rect(
-            new Point(5, 80),
-            new Point(85, 150));
+    //TODO: change ROI coordinates if necessary
     public static final Rect LEFT_ROI = new Rect(
-            new Point(95, 80),
-            new Point(175, 150));
-
-    //Threshold to determine if there is an object
-    final static double PERCENT_COLOR_THRESHOLD = 0.1;
+            new Point(0, 0),
+            new Point(400, 720));
+    public static final Rect MID_ROI = new Rect(
+            new Point(440, 0),
+            new Point(840, 720));
+    public static final Rect RIGHT_ROI = new Rect(
+            new Point(880, 0),
+            new Point(1280, 720));
 
     @Override
     public Mat processFrame(Mat input) {
@@ -58,37 +62,33 @@ public class SpikeDetect extends OpenCvPipeline {
         //creates submatrices
         Core.inRange(mat, lowHSV, highHSV, mat);
 
-        Mat mid = mat.submat(MID_ROI);
         Mat left = mat.submat(LEFT_ROI);
+        Mat mid = mat.submat(MID_ROI);
+        Mat right = mat.submat(RIGHT_ROI);
 
         //finds the raw value that fits in HSV range
-        midValue = Core.sumElems(mid).val[0] / MID_ROI.area() / 255;
         leftValue = Core.sumElems(left).val[0] / LEFT_ROI.area() / 255;
+        midValue = Core.sumElems(mid).val[0] / MID_ROI.area() / 255;
+        rightValue = Core.sumElems(right).val[0] / RIGHT_ROI.area() / 255;
 
-        mid.release();
         left.release();
-
-        //determines if its above threshold
-        boolean objectMid = midValue > PERCENT_COLOR_THRESHOLD;
-        boolean objectLeft = leftValue > PERCENT_COLOR_THRESHOLD;
-
-        //chooses location
-        if (objectMid) {
-            location = Location.MID;
-        } else if (objectLeft) {
-            location = Location.LEFT;
-        } else {
-            location = Location.RIGHT;
-        }
+        mid.release();
+        right.release();
 
         //stuff to make the gray scale appear on on robot phone
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB);
 
-        Scalar colorObject = new Scalar(255, 0, 0);
-        Scalar colorNoObject = new Scalar(0, 255, 0);
-
-        Imgproc.rectangle(mat, MID_ROI, location == Location.MID ? colorNoObject : colorObject);
-        Imgproc.rectangle(mat, LEFT_ROI, location == Location.LEFT ? colorNoObject : colorObject);
+        //select location region and draw rectangle on it
+        if (leftValue > midValue && leftValue > rightValue) {
+            location = Location.LEFT;
+            Imgproc.rectangle(mat, LEFT_ROI, new Scalar(255, 0, 0), 5);
+        } else if (midValue > rightValue) {
+            location = Location.MID;
+            Imgproc.rectangle(mat, MID_ROI, new Scalar(255, 0, 0), 5);
+        } else {
+            location = Location.RIGHT;
+            Imgproc.rectangle(mat, RIGHT_ROI, new Scalar(255, 0, 0), 5);
+        }
 
         return mat;
     }
@@ -104,5 +104,9 @@ public class SpikeDetect extends OpenCvPipeline {
 
     public String getMid() {
         return Math.round(midValue * 100) + "%";
+    }
+
+    public String getRight() {
+        return Math.round(rightValue * 100) + "%";
     }
 }

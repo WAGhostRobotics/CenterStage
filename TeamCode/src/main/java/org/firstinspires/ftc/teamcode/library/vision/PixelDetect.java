@@ -4,8 +4,6 @@ import org.opencv.core.Core;
 import org.opencv.core.Point;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
@@ -20,7 +18,7 @@ public class PixelDetect extends OpenCvPipeline {
     private double contourArea = 0;
 
     //Threshold to determine if there is an object
-    //TODO: replace with contour area instead?
+    //TODO: use contour area threshold instead
     final static double PERCENT_COLOR_THRESHOLD = 0.1;
 
     @Override
@@ -39,8 +37,7 @@ public class PixelDetect extends OpenCvPipeline {
 
         int largestContourIdx = 0;
 
-        //TODO: choose between RETR_EXTERNAL and RETR_TREE
-        Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
         //skips contour calculations if there are no contours
         if (contours.size() == 0) {
@@ -62,10 +59,6 @@ public class PixelDetect extends OpenCvPipeline {
 
         contourArea = Imgproc.contourArea(contours.get(largestContourIdx));
 
-//        //gets bounding rectangle and center from contour
-//        Rect rect = Imgproc.boundingRect(contours.get(largestContourIdx));
-//        center = new Point(rect.x+(rect.width/2.0), rect.y+(rect.height/2.0));
-
         //gets moments and center from contour
         Moments moments = Imgproc.moments(contours.get(largestContourIdx));
         center = new Point(moments.get_m10() / moments.get_m00(), moments.get_m01() / moments.get_m00());
@@ -78,7 +71,6 @@ public class PixelDetect extends OpenCvPipeline {
         //drawing features onto the matrix
         Imgproc.drawContours(mat, contours, largestContourIdx, new Scalar(255, 0, 0), 3);
         Imgproc.circle(mat, center, 5, new Scalar(255,0,0), 3);
-        // Imgproc.rectangle(mat,rect, new Scalar(255, 0, 0),3);
 
         return mat;
     }
