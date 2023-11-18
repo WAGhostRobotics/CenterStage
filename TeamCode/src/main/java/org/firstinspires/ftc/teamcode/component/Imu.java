@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.component;
 
 import com.qualcomm.hardware.bosch.BHI260IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -10,9 +9,6 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-
-import java.util.function.DoubleSupplier;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -68,8 +64,8 @@ public class Imu {
             imu = hwMap.get(BHI260IMU.class, "imu");
             imu.initialize(new IMU.Parameters(
                             new RevHubOrientationOnRobot(
-                                    RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                                    RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                                    RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD,
+                                    RevHubOrientationOnRobot.UsbFacingDirection.UP
                             )
                     )
             );

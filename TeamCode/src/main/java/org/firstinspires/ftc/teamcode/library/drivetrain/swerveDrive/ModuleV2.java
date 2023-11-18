@@ -24,6 +24,7 @@ public class ModuleV2 {
 
     private double targetAngle;
 
+
     private double error = 0;
     private double power = 0;
 
@@ -89,11 +90,11 @@ public class ModuleV2 {
     }
 
     public double getTargetAngle(){
-        return normalizeDegrees(targetAngle-180);
+        return normalizeDegrees(targetAngle);
     }
 
     public double getModuleAngle(){
-        return normalizeDegrees(Math.toDegrees(encoder.getCurrentPosition())-180);
+        return normalizeDegrees(Math.toDegrees(encoder.getCurrentPosition()));
     }
 
     public double getModuleCurrent() {
@@ -126,16 +127,28 @@ public class ModuleV2 {
 
         error = normalizeDegrees(target - angle);
 
+//        if(Math.abs(error)>90.0){
+//            angle = normalizeDegrees(angle + 180.0);
+//            changedMultiplier = true;
+////            setTargetAngle(target);
+////            motorMultiplier = -1;
+//        }
+//        else {
+//            changedMultiplier = false;
+////            motorMultiplier = 1;
+//        }
+
+        if (changedMultiplier) {
+            angle = normalizeDegrees(angle + 180); // or similar
+        }
+
+        error = normalizeDegrees(target - angle);
+
         if(Math.abs(error)>90.0){
-            target = normalizeDegrees(target - 180.0);
-            changedMultiplier = true;
-//            setTargetAngle(target);
-//            motorMultiplier = -1;
+            angle = normalizeDegrees(angle + 180); // or similar
+            changedMultiplier = !changedMultiplier;
         }
-        else {
-            changedMultiplier = false;
-//            motorMultiplier = 1;
-        }
+
 
         error = normalizeDegrees(target - angle);
 
