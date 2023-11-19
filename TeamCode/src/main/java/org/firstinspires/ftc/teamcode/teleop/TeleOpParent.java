@@ -17,8 +17,10 @@ import org.firstinspires.ftc.teamcode.CommandBase.Climb;
 import org.firstinspires.ftc.teamcode.CommandBase.CollectPixel;
 import org.firstinspires.ftc.teamcode.CommandBase.OuttakePixel;
 import org.firstinspires.ftc.teamcode.component.Intake;
+import org.firstinspires.ftc.teamcode.component.Slides;
 import org.firstinspires.ftc.teamcode.core.Gnocchi;
 import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
+import org.firstinspires.ftc.teamcode.library.autoDrive.TwoWheelLocalizer;
 import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.DriveStyle;
 import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.DriverOrientedControl;
@@ -62,9 +64,9 @@ public class TeleOpParent extends LinearOpMode {
         );
 
         Gnocchi.init(hardwareMap);
-        if(Gnocchi.imu==null){
-            Gnocchi.initIMU();
-        }
+//        if(Gnocchi.imu==null){
+//            Gnocchi.initIMU();
+//        }
 
         waitForStart();
 
@@ -77,6 +79,8 @@ public class TeleOpParent extends LinearOpMode {
         collectPixel = new CollectPixel();
         climb = new Climb();
         outtakePixel = new OuttakePixel();
+
+        Gnocchi.slides.setTargetPosition(Slides.TurnValue.RETRACTED.getTicks());
 
         while (opModeIsActive()) {
 
@@ -102,7 +106,7 @@ public class TeleOpParent extends LinearOpMode {
 
             //re-initializes imu to correct heading if teleop starts at the wrong heading
             if (gamepad2.left_stick_button){
-                Gnocchi.initIMU();
+                localizer.initImu();
             }
 
             // slow-mo
@@ -117,14 +121,13 @@ public class TeleOpParent extends LinearOpMode {
                 collectPixel.stop();
                 outtakePixel.stop();
                 climb.stop();
-                Gnocchi.slides.setTargetPosition(Gnocchi.slides.getTicks() + 10);
+                Gnocchi.slides.setTargetPosition(Gnocchi.slides.getTicks() + 50);
             } else if (gamepad1.right_bumper) {
                 collectPixel.stop();
                 outtakePixel.stop();
                 climb.stop();
-                Gnocchi.slides.setTargetPosition(Gnocchi.slides.getTicks() - 10);
+                Gnocchi.slides.setTargetPosition(Gnocchi.slides.getTicks() - 50);
             }
-
             Gnocchi.slides.update();
 
             // OUTTAKE

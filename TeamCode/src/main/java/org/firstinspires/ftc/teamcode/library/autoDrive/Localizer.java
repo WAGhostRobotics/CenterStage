@@ -1,21 +1,26 @@
 package org.firstinspires.ftc.teamcode.library.autoDrive;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.core.Gnocchi;
+import org.firstinspires.ftc.teamcode.component.Imu;
 import org.firstinspires.ftc.teamcode.util.Encoder;
 
 public class Localizer {
 
-    private Encoder parallelEncoder;
-    private Encoder perpendicularEncoder;
+    private Encoder rightEncoder;
+    private Encoder frontEncoder;
+    private Encoder leftEncoder;
+
+    private Imu imu;
 
     public static double TICKS_PER_REV = 8192;
     public static double WHEEL_RADIUS = 1   ; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
-    public static double FORWARD_OFFSET = -2.5; // in; offset of the lateral wheel
+    public static double LATERAL_DISTANCE = 3.5; // in; distance between the left and right wheels 4.125
+    public static double FORWARD_OFFSET = 3.5; // in; offset of the lateral wheel
 //public static double FORWARD_OFFSET = -1.1811; // in; offset of the lateral wheel
 
     private double x;
@@ -41,21 +46,31 @@ public class Localizer {
     public static double Y_MULTIPLIER = 1; // Multiplier in the Y direction
 
 
-    public Localizer(){
+    public Localizer(LinearOpMode opMode, HardwareMap hardwareMap, boolean twoWheel){
+        imu = new Imu(hardwareMap);
+        imu.initImuThread(opMode);
         reset();
     }
 
-    public Localizer(HardwareMap hardwareMap){
+    public Localizer(LinearOpMode opMode, HardwareMap hardwareMap){
 
-        parallelEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lb"));
-        perpendicularEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lf"));
+        imu = new Imu(hardwareMap);
+        imu.initImuThread(opMode);
+
+        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rr"));
+        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lf"));
+        frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rf"));
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
 
-        parallelEncoder.reset();
-        perpendicularEncoder.reset();
+        leftEncoder.setDirection(Encoder.Direction.REVERSE);
+
+        rightEncoder.reset();
+        frontEncoder.reset();
+        leftEncoder.reset();
 
         reset();
+
     }
 
     public void reset(){
@@ -100,8 +115,8 @@ public class Localizer {
     }
 
     public void calculateRawValues(){
-        double rawX = getRightEncoderPosition();
-        double heading = Gnocchi.imu.getCurrentHeading();
+        double rawX = (getRightEncoderPosition() + getLeftEncoderPosition())/2.0;
+        double heading = (getRightEncoderPosition() - getLeftEncoderPosition())/(LATERAL_DISTANCE);
         double rawY = getFwdEncoderPosition() - (FORWARD_OFFSET * heading);
 
         setRawValues(rawX, rawY, heading);
@@ -144,15 +159,31 @@ public class Localizer {
     }
 
     private double getRightEncoderPosition(){
-        return encoderTicksToInches(parallelEncoder.getCurrentPosition()) * X_MULTIPLIER;
+        return encoderTicksToInches(rightEncoder.getCurrentPosition()) * X_MULTIPLIER;
+    }
+
+    private double getLeftEncoderPosition(){
+        return encoderTicksToInches(leftEncoder.getCurrentPosition()) * X_MULTIPLIER;
     }
 
     private double getFwdEncoderPosition(){
-        return encoderTicksToInches(perpendicularEncoder.getCurrentPosition()) * Y_MULTIPLIER;
+        return encoderTicksToInches(frontEncoder.getCurrentPosition()) * Y_MULTIPLIER;
+    }
+
+    public void initImu(){
+        imu.initIMU();
     }
 
     public enum Angle{
         RADIANS,
         DEGREES,
+    }
+
+    public double getHeadingImu() {
+        return imu.getCurrentHeading();
+    }
+
+    public double getAngularVelocityImu() {
+        return imu.getAngularVelocity();
     }
 }

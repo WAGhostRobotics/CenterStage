@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.component;
 
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -22,11 +23,11 @@ public class MainSail {
     private final double PERMISSIBLE_ERROR = 10;
 
     public enum ArmPos {
-        RETRACT(0),
-        INTAKE(0.1),
-        PLACE(0.1),
-        LOW(0.1),
-        SPIKE(0.8);
+        RETRACT(0.0855),
+        INTAKE(0.0855),
+        PLACE(0.619),
+        LOW(0.1), //idk why this is here
+        SPIKE(0.745);
 
         private double position;
 
@@ -38,10 +39,10 @@ public class MainSail {
     }
 
     public enum HolderPos {
-        RETRACT(0),
-        INTAKE(0.1),
+        RETRACT(0.0875),
+        INTAKE(0.0875),
         SPIKE(0.1),
-        PLACE(0.496);
+        PLACE(0.247);
 
         private double position;
 
@@ -59,6 +60,10 @@ public class MainSail {
         pixelHold = hwMap.get(Servo.class, "pixelHolder");
         pixelDrop = hwMap.get(CRServo.class, "pixelDrop");
 
+        pixelDrop.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        arm.setPosition(ArmPos.RETRACT.getPosition());
+        pixelHold.setPosition(HolderPos.RETRACT.getPosition());
 //        colorSensor = hwMap.get(RevColorSensorV3.class, "colorSensor");
 
 //        dist2.setDirection(DcMotorSimple.Direction.REVERSE);

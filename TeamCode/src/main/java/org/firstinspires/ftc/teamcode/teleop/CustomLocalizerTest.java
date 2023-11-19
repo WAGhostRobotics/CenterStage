@@ -5,7 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
+import org.firstinspires.ftc.teamcode.library.autoDrive.TwoWheelLocalizer;
+import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.library.drivetrain.swerveDrive.Swerve;
+import org.firstinspires.ftc.teamcode.library.teleopDrive.WonkyDrive;
 
 /**
  * This is a simple teleop routine for testing localization. Drive the robot around like a normal
@@ -22,8 +27,8 @@ public class CustomLocalizerTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
 
-//        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
-        Swerve drive = new Swerve(hardwareMap);
+        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
+        Drivetrain drive = new MecanumDrive(hardwareMap);
 
         waitForStart();
 
@@ -38,6 +43,7 @@ public class CustomLocalizerTest extends LinearOpMode {
             drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, 0.5);
 //            drive.driveTest(0.5);
 
+//            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)) - localizer.getHeadingImu(), driveTurn, 0.5);
 //            localizer.update();
 
 //            telemetry.addData("x", localizer.getX());

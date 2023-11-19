@@ -16,7 +16,7 @@ public class Climb extends SequentialCommand {
                         new RunCommand(() -> Gnocchi.mainSail.moveArm(MainSail.ArmPos.RETRACT.getPosition())),
                         new SlidesMove(Slides.TurnValue.CLIMB.getTicks())
                 ),
-                new Wait(300),
+                new Wait(2000),
                 new RunCommand(() -> Gnocchi.slides.moveToPosition(Slides.TurnValue.RETRACTED.getTicks()))
         );
     }

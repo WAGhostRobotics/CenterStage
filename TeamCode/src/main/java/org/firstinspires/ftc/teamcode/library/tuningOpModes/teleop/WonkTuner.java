@@ -12,6 +12,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.library.autoDrive.TwoWheelLocalizer;
 import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
@@ -27,11 +28,11 @@ public class WonkTuner extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        Localizer localizer = new Localizer(hardwareMap);
-        Drivetrain drive = new MecanumDrive(hardwareMap);
-
-
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
+
+        Drivetrain drive = new MecanumDrive(hardwareMap);
 
         waitForStart();
 
@@ -50,6 +51,7 @@ public class WonkTuner extends LinearOpMode {
             telemetry.addData("Target", 0);
             telemetry.addData("Angle Error", wonk.getHeadingError());
             telemetry.addData("Strafe Accel", wonk.getStrafeVelo());
+            telemetry.addData("Heading", wonk.getCurrentHeading());
             telemetry.update();
         }
     }

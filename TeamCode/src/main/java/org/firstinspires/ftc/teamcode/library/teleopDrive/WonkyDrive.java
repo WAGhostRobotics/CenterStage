@@ -10,15 +10,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.component.Imu;
 import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
 
 @Config
 public class WonkyDrive {
-
-    public Imu imu;
-
 
     double driveTurn;
     double driveX;
@@ -54,10 +50,15 @@ public class WonkyDrive {
     public Drivetrain drive;
 
 
-    public static double theHolyConstant = 0.0001; //0.01
-    public static double rotationalDriftConstant = 0.001; //0.002
-    public static double p = 0.011, i = 0.001, d = 0.0011;
-    public static double turnff = -0.11;
+    // centripetal accel, creates perpendicular to path, convert force to power
+    public static double theHolyConstant = 0; //0.01
+    // fixes the thingy when it does the funny shimmy after overturning, predicts where robot will end
+    public static double rotationalDriftConstant = 0; //0.002
+    // heading tracking
+    public static double p = 0, i = 0, d = 0;
+    // when theres too much weight to one side and one side ends up going faster than the other
+    // heavy in back -> make neg
+    public static double turnff = 0; // turn feedforward
 
 
 //    PIDController headingController = new PIDController(0, 0, 0);
@@ -65,9 +66,6 @@ public class WonkyDrive {
     public PIDController headingController = new PIDController(p, i, d);
 
     public WonkyDrive(LinearOpMode opMode, HardwareMap hardwareMap, Localizer localizer, Drivetrain drive){
-
-        imu = new Imu(hardwareMap);
-        imu.initImuThread(opMode);
 
         this.localizer = localizer;
         this.drive = drive;
@@ -77,8 +75,8 @@ public class WonkyDrive {
         lasty = 0;
         lasty1 = 0;
         lastx = 0;
-        lastHeading = 0;
-        currentHeading = 0;
+        lastHeading = localizer.getHeadingImu();
+        currentHeading = localizer.getHeadingImu();
         strafeVelocity = 0;
 
         time = new ElapsedTime();

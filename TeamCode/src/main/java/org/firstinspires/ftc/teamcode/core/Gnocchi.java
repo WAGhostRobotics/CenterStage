@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -20,12 +21,10 @@ public class Gnocchi {
 
     public static HardwareMap hardwareMap;
 
-    public static Imu imu;
-
-    public static Motor frontLeft;
-    public static Motor frontRight;
-    public static Motor backLeft;
-    public static Motor backRight;
+    public static DcMotorEx frontLeft;
+    public static DcMotorEx frontRight;
+    public static DcMotorEx backLeft;
+    public static DcMotorEx backRight;
 
     public static Webcam webcam;
 
@@ -37,10 +36,10 @@ public class Gnocchi {
     public static void init(HardwareMap hwMap) {
         hardwareMap = hwMap;
 
-        frontLeft = hwMap.get(Motor.class, "lf");
-        frontRight = hwMap.get(Motor.class, "rf");
-        backLeft = hwMap.get(Motor.class, "lb");
-        backRight = hwMap.get(Motor.class, "rb");
+        frontLeft = hwMap.get(DcMotorEx.class, "lf");
+        frontRight = hwMap.get(DcMotorEx.class, "rf");
+        backLeft = hwMap.get(DcMotorEx.class, "lb");
+        backRight = hwMap.get(DcMotorEx.class, "rb");
 
         mainSail = new MainSail();
         mainSail.init(hwMap);
@@ -53,11 +52,6 @@ public class Gnocchi {
 
 //        launcher = new Launcher();
 //        launcher.init(hwMap);
-    }
-
-    public static void initIMU(){
-        imu = new Imu(hardwareMap);
-        imu.initIMU();
     }
 
     /**
