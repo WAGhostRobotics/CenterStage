@@ -30,15 +30,11 @@ import org.firstinspires.ftc.teamcode.library.teleopDrive.WonkyDrive;
 
 public class TeleOpParent extends LinearOpMode {
 
-    Orientation angles;
-    Acceleration gravity;
 
-    DriverOrientedControl drive;
 
     DriveStyle.DriveType type = DriveStyle.DriveType.MECANUMARCADE;
 
     public double power = 0.8;
-    public double turningMultiplier = 0.8;
 
     CollectPixel collectPixel;
     Climb climb;
@@ -72,7 +68,7 @@ public class TeleOpParent extends LinearOpMode {
 
         Drivetrain drive = new MecanumDrive(hardwareMap);
 
-        Localizer localizer = new Localizer();
+        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
 
         WonkyDrive wonkyDrive = new WonkyDrive(this, hardwareMap, localizer, drive);
 

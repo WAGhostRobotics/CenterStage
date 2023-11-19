@@ -46,6 +46,7 @@ public class Localizer {
     public static double Y_MULTIPLIER = 1; // Multiplier in the Y direction
 
 
+
     public Localizer(LinearOpMode opMode, HardwareMap hardwareMap, boolean twoWheel){
         imu = new Imu(hardwareMap);
         imu.initImuThread(opMode);
@@ -112,6 +113,10 @@ public class Localizer {
         lastY = rawY;
         lastHeading = heading;
 
+
+
+
+
     }
 
     public void calculateRawValues(){
@@ -133,14 +138,15 @@ public class Localizer {
     }
 
 
-    public double getHeading(Angle angle){
-        if(angle == Angle.RADIANS){
+    public double getHeading(Angle angle) {
+        if (angle == Angle.RADIANS) {
             return getHeading();
-        }else{
+        } else {
             return Math.toDegrees(getHeading());
 
         }
     }
+
 
     public double getHeading(){
         return heading;

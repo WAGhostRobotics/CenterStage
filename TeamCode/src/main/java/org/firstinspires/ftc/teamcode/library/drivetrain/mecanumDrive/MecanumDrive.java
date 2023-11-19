@@ -41,12 +41,6 @@ public class MecanumDrive implements Drivetrain {
         backLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         backRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
-        frontLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-
-
     }
 
     @Override
@@ -68,6 +62,12 @@ public class MecanumDrive implements Drivetrain {
 
 
         telemetry = "" + frontLeftPower + " \n" + frontRightPower + " \n" + backLeftPower + " \n" + backRightPower;
+
+        // 1 -1 1 -1
+        // -1 -1 1 1
+
+        // 1 -1 -1 1
+        //
 
     }
 
@@ -91,6 +91,8 @@ public class MecanumDrive implements Drivetrain {
         frontRight.setPower(movementPower*frontRightPower);
         backLeft.setPower(movementPower*backLeftPower);
         backRight.setPower(movementPower*backRightPower);
+
+        telemetry = "" + frontLeftPower + " \n" + frontRightPower + " \n" + backLeftPower + " \n" + backRightPower;
     }
 
     @Override
@@ -150,6 +152,10 @@ public class MecanumDrive implements Drivetrain {
         backLeft.setPower(backLeftPower);
         backRight.setPower(backRightPower);
 
+
+
+
+
     }
 
 
@@ -192,9 +198,5 @@ public class MecanumDrive implements Drivetrain {
         backLeftPower = (magnitude * sin / maxMovement - driveTurn);
         backRightPower = (magnitude * cos / maxMovement + driveTurn);
 
-        frontLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        frontRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        backLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        backRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
     }
 }

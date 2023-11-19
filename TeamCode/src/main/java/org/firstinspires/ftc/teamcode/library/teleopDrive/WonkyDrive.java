@@ -155,7 +155,7 @@ public class WonkyDrive {
     }
 
     public String getTelemetry(){
-        return "Angle: " + imu.getCurrentHeading() + "\nAngular velocity: " + imu.getAngularVelocity() ;
+        return "Angle: " + localizer.getHeadingImu() + "\nAngular velocity: " + localizer.getAngularVelocityImu() ;
 
     }
 
@@ -191,7 +191,7 @@ public class WonkyDrive {
 
     public void updateHeading(){
 
-        double omega = imu.getAngularVelocity();
+        double omega = localizer.getAngularVelocityImu();
 
         lastHeading = normalizeDegrees(getCurrentHeading() + Math.signum(omega) * 0.5 * Math.pow(omega, 2) * rotationalDriftConstant);
     }
@@ -207,13 +207,9 @@ public class WonkyDrive {
 
     //gets angle from imu
     public double getCurrentHeading() {
-        return imu.getCurrentHeading();
+        return localizer.getHeadingImu();
     }
 
-
-    public void initIMU(){
-
-    }
 
     public double getStrafeVelo(){
         return strafeVelocity;
