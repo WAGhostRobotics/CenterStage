@@ -160,7 +160,6 @@ public class TeleOpParent extends LinearOpMode {
                 Gnocchi.intake.stop();
                 Gnocchi.mainSail.stop();
             }
-
             // necessary? probably not. idk why im putting this here
             if (gamepad1.dpad_up) {
                 Gnocchi.intake.adjustHeight(true);
