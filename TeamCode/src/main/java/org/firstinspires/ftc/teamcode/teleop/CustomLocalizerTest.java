@@ -27,7 +27,7 @@ public class CustomLocalizerTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
 
-        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
+        TwoWheelLocalizer localizer = new TwoWheelLocalizer(this, hardwareMap);
         Drivetrain drive = new MecanumDrive(hardwareMap);
 
         waitForStart();
@@ -40,17 +40,17 @@ public class CustomLocalizerTest extends LinearOpMode {
             double driveTurn = Math.pow(-gamepad2.right_stick_x, 3);
             double driveY = Math.pow(-gamepad2.left_stick_x, 3);
             double driveX = Math.pow(-gamepad2.left_stick_y, 3);
-            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, 0.5);
+//            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, 0.5);
 //            drive.driveTest(0.5);
 
-//            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)) - localizer.getHeadingImu(), driveTurn, 0.5);
-//            localizer.update();
+            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)) - localizer.getHeadingImu(), driveTurn, 0.8 );
+            localizer.update();
 
-//            telemetry.addData("x", localizer.getX());
-//            telemetry.addData("y", localizer.getY());
-//            telemetry.addData("heading", localizer.getHeading(Localizer.Angle.DEGREES));
-//            telemetry.addData("rawx", localizer.getRawX());
-//            telemetry.addData("rawy", localizer.getRawY());
+            telemetry.addData("x", localizer.getX());
+            telemetry.addData("y", localizer.getY());
+            telemetry.addData("heading", localizer.getHeading(Localizer.Angle.DEGREES));
+            telemetry.addData("rawx", localizer.getRawX());
+            telemetry.addData("rawy", localizer.getRawY());
             telemetry.addData("hz", 1.0/timer.seconds());
             telemetry.addData("Power", drive.getTelemetry());
             telemetry.update();

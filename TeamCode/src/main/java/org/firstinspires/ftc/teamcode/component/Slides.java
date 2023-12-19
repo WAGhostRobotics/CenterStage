@@ -11,7 +11,7 @@ public class Slides {
 
     private DcMotorEx slide1;
     private DcMotorEx slide2;
-    private final double POWER = 0.8;
+    private final double POWER = 1;
     private final double ERROR = 67.5;
 
     private final double minPower = 0.3;
@@ -42,12 +42,11 @@ public class Slides {
         if(teleop){
             slide1 = hwMap.get(DcMotorEx.class, "slide1");
             slide1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            slide1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             slide1.setDirection(DcMotorSimple.Direction.REVERSE);
 
             slide2 = hwMap.get(DcMotorEx.class, "slide2");
             slide2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            slide2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         }else{
             slide1 = hwMap.get(DcMotorEx.class, "slide1");
             slide1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -108,18 +107,6 @@ public class Slides {
         slide2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
-    // move claw up by small increments
-    public void moveUp(){
-        slide1.setTargetPosition(slide1.getCurrentPosition() + 40 );
-        slide1.setPower(0.6);
-        slide1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        slide2.setTargetPosition(slide2.getCurrentPosition() + 40 );
-        slide2.setPower(0.6);
-        slide2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
-
-
     public double getCurrent1(){
         return slide1.getCurrent(CurrentUnit.AMPS);
     }
@@ -128,16 +115,7 @@ public class Slides {
         return slide2.getCurrent(CurrentUnit.AMPS);
     }
 
-    // move claw down by small increments
-    public void moveDown(){
-        slide1.setTargetPosition(slide1.getCurrentPosition() - 40);
-        slide1.setPower(-0.6);
-        slide1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        slide2.setTargetPosition(slide2.getCurrentPosition() - 40);
-        slide2.setPower(-0.6);
-        slide2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
 
     public int getTicks(){
         return slide1.getCurrentPosition();

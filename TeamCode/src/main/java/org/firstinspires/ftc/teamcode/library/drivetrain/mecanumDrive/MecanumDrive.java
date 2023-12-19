@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
 
+@Config
 public class MecanumDrive implements Drivetrain {
 
     private DcMotorEx frontLeft;
@@ -20,6 +22,8 @@ public class MecanumDrive implements Drivetrain {
     private double frontRightPower;
     private double backLeftPower;
     private double backRightPower;
+
+    public static double strafeMultiplier = 1;
 
     public final double voltageConstant = 12.3;
 
@@ -189,7 +193,7 @@ public class MecanumDrive implements Drivetrain {
         theta += 45;
 
         //sin and cos of robot movement
-        sin = Math.sin(Math.toRadians(theta));
+        sin = Math.sin(Math.toRadians(theta)) * strafeMultiplier;
         cos = Math.cos(Math.toRadians(theta));
         maxMovement = Math.max(Math.abs(sin), Math.abs(cos));
 

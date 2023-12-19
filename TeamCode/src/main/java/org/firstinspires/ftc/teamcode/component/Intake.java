@@ -3,27 +3,19 @@ package org.firstinspires.ftc.teamcode.component;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Intake {
 
     private DcMotor intake;
     private Servo height;
     private CRServo sushi;
-    private final double power = 0.65;
-
-    private final double collectedDistance = 0.0;
-    private DistanceSensor distanceSensor;
-
-    private DigitalChannel ledIndicator;
+    private final double power = 1;
 
     public enum IntakeHeight {
-        GROUND(0.001),
+        GROUND(0),
+        INTAKE(0.35),
         PIXEL1(0.1),
         PIXEL2(0.2),
         PIXEL3(0.3),
@@ -46,19 +38,12 @@ public class Intake {
         height = hwMap.get(Servo.class, "height");
         sushi = hwMap.get(CRServo.class, "sushi");
         sushi.setDirection(DcMotorSimple.Direction.REVERSE);
-        distanceSensor = hwMap.get(DistanceSensor.class, "distanceSensor");
-        ledIndicator = hwMap.get(DigitalChannel.class, "led");
-        height.setDirection(Servo.Direction.REVERSE);
+//        height.setDirection(Servo.Direction.REVERSE);
     }
 
     public void in() {
         intake.setPower(power);
         sushi.setPower(1);
-        setLed(pixelCollet());
-    }
-
-    public void setLed(boolean on) {
-        ledIndicator.setState(on);
     }
 
     public void out() {
@@ -81,8 +66,7 @@ public class Intake {
         }
     }
 
-    public boolean pixelCollet() {
-        return distanceSensor.getDistance(DistanceUnit.MM) < collectedDistance;
+    public double getHeight() {
+        return height.getPosition();
     }
-
 }

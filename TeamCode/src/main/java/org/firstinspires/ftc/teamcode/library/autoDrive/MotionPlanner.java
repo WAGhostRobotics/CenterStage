@@ -22,15 +22,17 @@ public class MotionPlanner {
     private Drivetrain drive;
     private Localizer localizer;
 
+    public static double p, i, d;
+
     //    private PIDController translationalControl = new PIDController(0.022,0.001,0.03);
-    public static PIDController translationalControl = new PIDController(0,0,0);
-    public static PIDController headingControl = new PIDController(0, 0, 0);
+    public static PIDController translationalControl = new PIDController(p,i,d);
+    public static PIDController headingControl = new PIDController(0.001, 0, 0);
 
     //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
 //    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
     public static PIDController translationalControlEndX = new PIDController(0.02,0,0.5);
     public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
-    public static PIDController headingControlEnd = new PIDController(0.001, 0.02, 0.1); //i=0.0226
+    public static PIDController headingControlEnd = new PIDController(0.0075, 0.00025, 0); //i=0.0226
 
 
     private int index;
@@ -59,7 +61,7 @@ public class MotionPlanner {
     double currentX;
 
     double radius;
-    public final double THE_HOLY_CONSTANT = 0.00006; //0.001
+    public final static double THE_HOLY_CONSTANT = 0.00006; //0.001
 
     double ac;
 
@@ -69,13 +71,14 @@ public class MotionPlanner {
 
     private final double movementPower = 0.85;
     public static double kStatic = 0.31; //.19
-    private final double translational_error = 1;
+    private final double translational_error = 0.25;
     private final double heading_error = 3;
-    private final double endTrajThreshhold = 18;
+    private final double endTrajThreshhold = 12;
     public static final double tIncrement = 0.05;
 
 
     boolean end = false;
+    boolean setVelocity = false;
 
     private ElapsedTime ACtimer;
 
@@ -92,6 +95,11 @@ public class MotionPlanner {
     double voltage = 0;
 
     public MotionPlanner(MecanumDrive drive, Localizer localizer, HardwareMap hwMap){
+        translationalControlEndY.setIntegrationBounds(-10000000, 10000000);
+        translationalControlEndX.setIntegrationBounds(-10000000, 10000000);
+        headingControlEnd.setIntegrationBounds(-10000000, 10000000);
+        translationalControl.setIntegrationBounds(-10000000, 10000000);
+        headingControl.setIntegrationBounds(-10000000, 10000000);
 
         this.drive = drive;
         this.localizer = localizer;
@@ -146,7 +154,8 @@ public class MotionPlanner {
                 "\n Estimated Stopping " + estimatedStopping +
 //                "\n " + drive.getTelemetry() +
                 "\n Finished " + isFinished()+
-                "\n Loop Rate " + numLoops/loopTime.seconds();
+                "\n Loop Rate " + numLoops/loopTime.seconds() +
+                "\n Heading: " + localizer.getTelemetry();
     }
 
     public double getPerpendicularError(){
@@ -174,31 +183,25 @@ public class MotionPlanner {
         x = localizer.getX();
         y = localizer.getY();
         currentHeading = normalizeDegrees(localizer.getHeading(Localizer.Angle.DEGREES));
+//        currentHeading = 0;
 
-        while(index <= estimatedStopping && distance(spline.getCurvePoints()[index+1], new Point(x, y))<
-                distance(spline.getCurvePoints()[index], new Point(x, y))){
-            index ++;
+        while (index <= estimatedStopping && distance(spline.getCurvePoints()[index + 1], new Point(x, y)) <
+                    distance(spline.getCurvePoints()[index], new Point(x, y))) {
+            index++;
         }
 
         target = spline.getCurvePoints()[index];
         targetHeading = spline.getCurveHeadings()[index];
         derivative = spline.getCurveDerivatives()[index];
-
-
         if(!isFinished()){
 
-
             if(index >=estimatedStopping){
-
-
                 if(!end){
                     translationalControlEndX.reset();
                     translationalControlEndY.reset();
                     headingControlEnd.reset();
                 }
-
                 end = true;
-
 
                 x_power = translationalControlEndX.calculate(0, spline.getEndPoint().getX()-x);
                 y_power = translationalControlEndY.calculate(0, spline.getEndPoint().getY()-y);
@@ -206,11 +209,8 @@ public class MotionPlanner {
                 x_power = (!reachedXTarget()) ? (x_power + Math.signum(x_power) * kStatic): 0;
                 y_power = (!reachedYTarget()) ? (y_power + Math.signum(y_power) * kStatic): 0;
 
-
                 x_rotated = x_power * Math.cos(Math.toRadians(currentHeading)) + y_power * Math.sin(Math.toRadians(currentHeading));
                 y_rotated =  -x_power * Math.sin(Math.toRadians(currentHeading)) + y_power * Math.cos(Math.toRadians(currentHeading));
-
-
 
                 magnitude = Math.hypot(x_rotated, y_rotated);
                 theta = Math.toDegrees(Math.atan2(y_rotated, x_rotated));
@@ -220,9 +220,7 @@ public class MotionPlanner {
 
                 drive.drive(magnitude, theta, driveTurn, movementPower, voltage);
 
-
             } else {
-
                 end = false;
 
                 magnitude = 1;
@@ -232,20 +230,16 @@ public class MotionPlanner {
 
                 theta = Math.toDegrees(Math.atan2(vy, vx));
 
-
                 double correction;
                 double multiplier = 1;
 
                 if(vx == 0){
 
-
                     perpendicularError = target.getX() - x;
-
 
                     if(vy<0){
                         multiplier = -1;
                     }
-
 
                 }else{
                     double slope = vy/vx;
@@ -265,11 +259,8 @@ public class MotionPlanner {
                 theta -= Math.toDegrees(Math.atan2(correction, magnitude));
                 magnitude = Math.hypot(magnitude, correction);
 
-
                 x_power = magnitude * Math.cos(Math.toRadians(theta));
                 y_power = magnitude * Math.sin(Math.toRadians(theta));
-
-
 
                 x_rotated = x_power * Math.cos(Math.toRadians(currentHeading)) + y_power * Math.sin(Math.toRadians(currentHeading));
                 y_rotated = -x_power * Math.sin(Math.toRadians(currentHeading)) + y_power * Math.cos(Math.toRadians(currentHeading));
@@ -364,4 +355,5 @@ public class MotionPlanner {
     private double distance(Point p1, Point p2){
         return Math.hypot(p1.getX()-p2.getX(), p1.getY()-p2.getY());
     }
+
 }

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.component;
 
 import com.qualcomm.hardware.bosch.BHI260IMU;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -21,9 +22,10 @@ public class Imu {
     private double heading = 0;
     private double angularVelocity = 0;
 
+
     HardwareMap hwMap;
 
-    public Imu(HardwareMap hwMap){
+    public Imu(HardwareMap hwMap) {
         this.hwMap = hwMap;
         initIMU();
     }
@@ -33,13 +35,13 @@ public class Imu {
         return heading;
     }
 
-    public void initImuThread(LinearOpMode opMode){
+    public void initImuThread(LinearOpMode opMode) {
         imuThread = new Thread(() -> {
-            synchronized (imuSync){
+            synchronized (imuSync) {
                 while (!opMode.isStarted() && !opMode.isStopRequested()) {
-
+                    imu.resetYaw();
                 }
-                while(opMode.opModeIsActive() && !opMode.isStopRequested()){
+                while (opMode.opModeIsActive() && !opMode.isStopRequested()) {
                     heading = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
                     angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES).xRotationRate;
                 }
@@ -49,18 +51,18 @@ public class Imu {
         imuThread.start();
     }
 
-    public BHI260IMU getImu(){
+    public BHI260IMU getImu() {
         return imu;
     }
 
 
-    public double getAngularVelocity(){
+    public double getAngularVelocity() {
         return angularVelocity;
     }
 
 
-    public void initIMU(){
-        synchronized (imuSync){
+    public void initIMU() {
+        synchronized (imuSync) {
             imu = hwMap.get(BHI260IMU.class, "imu");
             imu.initialize(new IMU.Parameters(
                             new RevHubOrientationOnRobot(
@@ -70,5 +72,11 @@ public class Imu {
                     )
             );
         }
+        imu.resetYaw();
+        heading = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+    }
+
+    public double getHeading() {
+        return heading;
     }
 }

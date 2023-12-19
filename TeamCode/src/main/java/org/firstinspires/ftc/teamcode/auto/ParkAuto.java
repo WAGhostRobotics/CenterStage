@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
 import org.firstinspires.ftc.teamcode.library.autoDrive.MotionPlanner;
+import org.firstinspires.ftc.teamcode.library.autoDrive.TwoWheelLocalizer;
 import org.firstinspires.ftc.teamcode.library.autoDrive.math.Bezier;
 import org.firstinspires.ftc.teamcode.library.autoDrive.math.Point;
 import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.MecanumDrive;
@@ -26,10 +27,10 @@ public class ParkAuto extends LinearOpMode {
     boolean red = false;
     StartPos startPos = StartPos.BLUE_IN;
 
-    Localizer localizer = new Localizer(hardwareMap);
+//    TwoWheelLocalizer localizer = new TwoWheelLocalizer(this, hardwareMap);
     MecanumDrive mecanumDrive = new MecanumDrive(hardwareMap);
 
-    MotionPlanner motionPlanner = new MotionPlanner(mecanumDrive, localizer, hardwareMap);
+//    MotionPlanner motionPlanner = new MotionPlanner(mecanumDrive, localizer, hardwareMap);
     Bezier park;
 
     @Override
@@ -53,7 +54,11 @@ public class ParkAuto extends LinearOpMode {
 
         while(opModeIsActive()) {
             // PARK OH YEAH
-            motionPlanner.startTrajectory(park);
+//            motionPlanner.startTrajectory(park);
+
+            mecanumDrive.drive(1, 0, 0, 0.7);
+            sleep(3500);
+            mecanumDrive.drive(0,0,0,0);
         }
 
     }

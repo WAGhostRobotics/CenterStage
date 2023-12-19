@@ -116,12 +116,10 @@ public class TeleOpParent extends LinearOpMode {
             if (gamepad1.left_bumper) {
                 collectPixel.stop();
                 outtakePixel.stop();
-                climb.stop();
                 Gnocchi.slides.setTargetPosition(Gnocchi.slides.getTicks() + 50);
             } else if (gamepad1.right_bumper) {
                 collectPixel.stop();
                 outtakePixel.stop();
-                climb.stop();
                 Gnocchi.slides.setTargetPosition(Gnocchi.slides.getTicks() - 50);
             }
             Gnocchi.slides.update();

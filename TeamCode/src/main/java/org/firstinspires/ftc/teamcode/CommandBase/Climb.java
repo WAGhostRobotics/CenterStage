@@ -11,12 +11,10 @@ public class Climb extends SequentialCommand {
 
     public Climb() {
         super(
-                new ParallelCommand(
-                        new RunCommand(() -> Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.RETRACT.getPosition())),
-                        new RunCommand(() -> Gnocchi.mainSail.moveArm(MainSail.ArmPos.RETRACT.getPosition())),
-                        new SlidesMove(Slides.TurnValue.CLIMB.getTicks())
-                ),
-                new Wait(2000),
+                new SlidesMove(Slides.TurnValue.CLIMB.getTicks()),
+                new RunCommand(() -> Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.RETRACT.getPosition())),
+                new RunCommand(() -> Gnocchi.mainSail.moveArm(MainSail.ArmPos.RETRACT.getPosition())),
+                new Wait(4000),
                 new RunCommand(() -> Gnocchi.slides.moveToPosition(Slides.TurnValue.RETRACTED.getTicks()))
         );
     }

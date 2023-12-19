@@ -58,7 +58,7 @@ public class WonkyDrive {
     public static double p = 0, i = 0, d = 0;
     // when theres too much weight to one side and one side ends up going faster than the other
     // heavy in back -> make neg
-    public static double turnff = 0; // turn feedforward
+    public static double turnff = 0 ; // turn feedforward
 
 
 //    PIDController headingController = new PIDController(0, 0, 0);
@@ -80,6 +80,8 @@ public class WonkyDrive {
         strafeVelocity = 0;
 
         time = new ElapsedTime();
+
+        headingController.setIntegrationBounds(-1000000000, 1000000000);
     }
 
 

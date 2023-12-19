@@ -38,9 +38,9 @@ public class Webcam {
     // UNITS ARE METERS
     double tagsize = 0.166;
 
-    AprilTagDetection tagOfInterest = null;
+    AprilTagDetection tagOfInterest = null; // tag you want
 
-    AprilTagLocation aprilTagLocation = null;
+    AprilTagLocation aprilTagLocation = null; // tag in general
 
     SpikeDetect.Location location = null;
 
@@ -77,6 +77,7 @@ public class Webcam {
     }
 
     public void scanForTags(){
+        webcam.setPipeline(aprilTagPipe);
         ArrayList<AprilTagDetection> currentDetections = aprilTagPipe.getLatestDetections();
 
 //        if (currentDetections.size() != 0) {

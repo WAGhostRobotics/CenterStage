@@ -20,7 +20,10 @@ public class MainSail {
 //    private RevColorSensorV3 colorSensor;
 
     private final double BOARD_DIST = 50;
-    private final double PERMISSIBLE_ERROR = 10;
+    private final double PERMISSIBLE_ERROR = 0.01;
+
+    private double holdPos;
+    private double armPos;
 
     public enum ArmPos {
         RETRACT(0.0855),
@@ -103,10 +106,12 @@ public class MainSail {
 //    }
 
     public void moveArm(double position) {
+        armPos = position;
         arm.setPosition(position);
     }
 
     public void movePixelHolder(double position) {
+        holdPos = position;
         pixelHold.setPosition(position);
     }
 
@@ -124,8 +129,10 @@ public class MainSail {
 
     public void adjustArm(boolean up) {
         if (up) {
+            armPos += 0.01;
             arm.setPosition(arm.getPosition() + 0.01);
         } else {
+            armPos -= 0.01;
             arm.setPosition(arm.getPosition() - 0.01);
         }
     }
@@ -140,6 +147,11 @@ public class MainSail {
 
     public double radiansToPos(double radians) {
         return radians / 2 / Math.PI;
+    }
+
+    public boolean isFinished() {
+        return Math.abs(pixelHold.getPosition() - holdPos) <= PERMISSIBLE_ERROR &&
+                Math.abs(arm.getPosition() - armPos) <= PERMISSIBLE_ERROR;
     }
 
 }

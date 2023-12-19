@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.component.Imu;
+import org.firstinspires.ftc.teamcode.component.OldImu;
 import org.firstinspires.ftc.teamcode.util.Encoder;
 
 public class Localizer {
@@ -13,10 +14,10 @@ public class Localizer {
     private Encoder frontEncoder;
     private Encoder leftEncoder;
 
-    private Imu imu;
+    private OldImu imu;
 
     public static double TICKS_PER_REV = 8192;
-    public static double WHEEL_RADIUS = 1   ; // in
+    public static double WHEEL_RADIUS = 0.689; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
     public static double LATERAL_DISTANCE = 3.5; // in; distance between the left and right wheels 4.125
@@ -33,7 +34,7 @@ public class Localizer {
 
     private double rawX;
     private double rawY;
-    private double heading;
+    private double heading; // radians
 
     private double r0;
     private double r1;
@@ -48,18 +49,18 @@ public class Localizer {
 
 
     public Localizer(LinearOpMode opMode, HardwareMap hardwareMap, boolean twoWheel){
-        imu = new Imu(hardwareMap);
+        imu = new OldImu(hardwareMap);
         imu.initImuThread(opMode);
         reset();
     }
 
     public Localizer(LinearOpMode opMode, HardwareMap hardwareMap){
 
-        imu = new Imu(hardwareMap);
+        imu = new OldImu(hardwareMap);
         imu.initImuThread(opMode);
 
-        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rr"));
-        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lf"));
+        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rr"));
+        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lf"));
         frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rf"));
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
@@ -112,10 +113,6 @@ public class Localizer {
         lastX = rawX;
         lastY = rawY;
         lastHeading = heading;
-
-
-
-
 
     }
 
@@ -192,4 +189,9 @@ public class Localizer {
     public double getAngularVelocityImu() {
         return imu.getAngularVelocity();
     }
+
+    public String getTelemetry() {
+        return "First heading: " + imu.getCurrentHeading();
+    }
+
 }

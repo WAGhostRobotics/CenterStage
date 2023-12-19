@@ -12,12 +12,19 @@ public class SlidesMove extends Command {
     }
 
     @Override
+    public void init() {
+        Gnocchi.slides.setTargetPosition(ticks);
+    }
+
+
+    @Override
     public void update() {
-        Gnocchi.slides.update();
+        Gnocchi.slides.setTargetPosition(ticks);
+//                Gnocchi.slides.update();
     }
 
     @Override
     public boolean isFinished() {
-        return Gnocchi.slides.isFinished();
+        return Gnocchi.slides.isFinished()&&Gnocchi.slides.getTargetPosition()==ticks;
     }
 }
