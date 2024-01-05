@@ -14,15 +14,12 @@ public class TwoWheelLocalizer extends Localizer {
 
     private Encoder parallelEncoder;
     private Encoder perpendicularEncoder;
-    private String smh;
-
 
     public static double PERPENDICULAR_X = 3;
     public static double PARALLEL_Y = 0;
 
     //-3.088
     //-8.696
-
 
     public TwoWheelLocalizer(LinearOpMode opMode, HardwareMap hardwareMap){
         super(opMode, hardwareMap, true);
@@ -53,7 +50,6 @@ public class TwoWheelLocalizer extends Localizer {
         double rawY = getPerpendicularEncoderPosition() - (PERPENDICULAR_X * heading);
 
         setRawValues(rawX, rawY, heading);
-        smh = "\nraw X " + rawX + "\nraw Y" + rawY;
     }
 
     private double getParallelEncoderPosition(){
@@ -64,16 +60,9 @@ public class TwoWheelLocalizer extends Localizer {
         return encoderTicksToInches(perpendicularEncoder.getCurrentPosition()) * Y_MULTIPLIER;
     }
 
-
     @Override
     public double getHeading(){
         return Math.toRadians(getHeadingImu());
     }
-
-    public String getStoopid() {
-        return "OG X: " + getParallelEncoderPosition() + "\n OG Y: " + getPerpendicularEncoderPosition()
-                + smh;
-    }
-
 
 }

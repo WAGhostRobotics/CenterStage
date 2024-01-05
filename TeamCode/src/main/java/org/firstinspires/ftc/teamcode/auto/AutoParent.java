@@ -2,16 +2,23 @@ package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.CommandBase.FollowTrajectory;
 import org.firstinspires.ftc.teamcode.CommandBase.MainSailMove;
-import org.firstinspires.ftc.teamcode.CommandBase.OuttakePixel;
+import org.firstinspires.ftc.teamcode.CommandBase.PosOuttakePixel;
 import org.firstinspires.ftc.teamcode.CommandBase.PixelHolderFunc;
+import org.firstinspires.ftc.teamcode.CommandBase.Wait;
 import org.firstinspires.ftc.teamcode.component.MainSail;
 import org.firstinspires.ftc.teamcode.component.Webcam;
 import org.firstinspires.ftc.teamcode.core.Gnocchi;
-import org.firstinspires.ftc.teamcode.library.autoDrive.math.HeadingFollowerPath;
+import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
+import org.firstinspires.ftc.teamcode.library.autoDrive.MotionPlanner;
+import org.firstinspires.ftc.teamcode.library.autoDrive.TwoWheelLocalizer;
+import org.firstinspires.ftc.teamcode.library.autoDrive.math.Bezier;
+import org.firstinspires.ftc.teamcode.library.autoDrive.math.Point;
 import org.firstinspires.ftc.teamcode.library.commandSystem.ParallelCommand;
 import org.firstinspires.ftc.teamcode.library.commandSystem.RunCommand;
 import org.firstinspires.ftc.teamcode.library.commandSystem.SequentialCommand;
+import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.library.vision.SpikeDetect;
 
 //@Autonomous
@@ -33,8 +40,8 @@ public class AutoParent extends LinearOpMode {
     SpikeDetect.Location location;
     Webcam.AprilTagLocation aprilTagLocation;
 
-    HeadingFollowerPath board;
-    HeadingFollowerPath park;
+    Bezier spike;
+    Bezier toAprilTags;
 
     private int transX;
     private int transY;
@@ -56,52 +63,128 @@ public class AutoParent extends LinearOpMode {
     * 8. park
     * */
 
-    SequentialCommand scheduler = new SequentialCommand(
-            // move to position
-            new ParallelCommand(
-                    new RunCommand(() -> Gnocchi.mainSail.moveArm(MainSail.ArmPos.SPIKE.getPosition())),
-                    new RunCommand(() -> Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.SPIKE.getPosition()))
-            ),
-            new PixelHolderFunc(false, false),
-            new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition()),
-            // move to position
-            // use april tags
-            new OuttakePixel(),
-            new PixelHolderFunc(false, false)
-            // park
-    );
-
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Gnocchi.webcam.init(hardwareMap);
+
+        Gnocchi.init(hardwareMap);
+
+        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
+        MecanumDrive drive = new MecanumDrive(hardwareMap);
+        MotionPlanner motionPlanner = new MotionPlanner(drive, localizer, hardwareMap);
+
+        spike = new Bezier(180,
+                new Point(0, 0),
+                new Point(11.3, 30.7),
+                new Point(46, 20.5),
+                new Point(47, 0));;
+
+        toAprilTags = new Bezier(-90,
+                new Point(47, 0),
+                new Point(49, -10),
+                new Point(52, -40),
+                new Point(48, -42));
+
+        SequentialCommand scheduler = new SequentialCommand(
+                // move to position
+                new ParallelCommand(
+                        new FollowTrajectory(motionPlanner, spike),
+                        new RunCommand(() -> Gnocchi.mainSail.moveArm(MainSail.ArmPos.SPIKE.getPosition())),
+                        new RunCommand(() -> Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.SPIKE.getPosition()))
+                ),
+                new Wait(100),
+                new PixelHolderFunc(false, false),
+                new Wait(500),
+                new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition()),
+                new FollowTrajectory(motionPlanner, toAprilTags),
+                // move to position
+                // use april tags
+                new PosOuttakePixel(),
+                new PixelHolderFunc(false, false)
+                // park
+        );
+
+//        Gnocchi.webcam.init(hardwareMap);
 //        waitForStart();
 
         while (!isStarted() && !isStopRequested()) {
-            Gnocchi.webcam.scanForLocation();
-            location = Gnocchi.webcam.getLocation();
 
-            if (location != null) {
-                telemetry.addData("Location: ", location);
-                telemetry.update();
-            }
+            spike = new Bezier(180,
+                    new Point(0, 0),
+                    new Point(11.3, 30.7),
+                    new Point(46, 20.5),
+                    new Point(47, 0));
 
-            switch (startPos) {
-                case BLUE_IN:
-                case BLUE_OUT:
-                case RED_IN:
-                case RED_OUT:
-            }
+            toAprilTags = new Bezier(-90,
+                    new Point(47, 0),
+                    new Point(49, -10),
+                    new Point(52, -40),
+                    new Point(48, -42));
+
+//            Gnocchi.webcam.scanForLocation();
+//            location = Gnocchi.webcam.getLocation();
+//
+//            if (location != null) {
+//                telemetry.addData("Location: ", location);
+//                telemetry.update();
+//            }
+//
+//            switch (location) {
+//                case RIGHT:
+//                    spike = new Bezier(-150,
+//                    new Point(0, 0),
+//                    new Point(11.3, 30.7),
+//                    new Point(46, 20.5),
+//                    new Point(47, 0));
+//                    break;
+//                case MID:
+//                    spike = new Bezier(180,
+//                    new Point(0, 0),
+//                    new Point(11.3, 30.7),
+//                    new Point(46, 20.5),
+//                    new Point(47, 0));
+//                    break;
+//                case LEFT:
+//                    spike = new Bezier(150,
+//                    new Point(0, 0),
+//                    new Point(11.3, 30.7),
+//                    new Point(46, 20.5),
+//                    new Point(47, 0));
+//                    break;
+//            }
+//
+//            switch (startPos) {
+//                case BLUE_IN:
+//                    board = new HeadingFollowerPath();
+//                    break;
+//                case BLUE_OUT:
+//                    board = new HeadingFollowerPath();
+//                    break;
+//                case RED_IN:
+//                    board = new HeadingFollowerPath();
+//                    break;
+//                case RED_OUT:
+//                    board = new HeadingFollowerPath();
+//                    break;
+//            }
+//
+//            motionPlanner.startTrajectory(spike);
 
         }
 
-        while(opModeIsActive()) {
-//            telemetry.addData("Contour Area: ", pipe.getContourArea());
-//            telemetry.addData("X Center: ", pipe.getCenter().x);
-//            telemetry.addData("Y Center: ", pipe.getCenter().y);
-//            telemetry.update();
+        scheduler.init();
+
+        motionPlanner.startTrajectory(spike);
+        while(opModeIsActive() && !isStopRequested()) {
+            motionPlanner.update();
+            Gnocchi.slides.update();
+//            scheduler.update();
+
+            telemetry.addData("index", scheduler.getIndex());
+            telemetry.addData("finished", scheduler.isFinished());
+            telemetry.update();
         }
 
-        Gnocchi.webcam.stopStreaming();
+//        Gnocchi.webcam.stopStreaming();
     }
 }

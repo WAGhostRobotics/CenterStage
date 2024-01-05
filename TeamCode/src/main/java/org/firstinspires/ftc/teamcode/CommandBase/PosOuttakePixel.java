@@ -7,9 +7,9 @@ import org.firstinspires.ftc.teamcode.library.commandSystem.ParallelCommand;
 import org.firstinspires.ftc.teamcode.library.commandSystem.RunCommand;
 import org.firstinspires.ftc.teamcode.library.commandSystem.SequentialCommand;
 
-public class OuttakePixel extends SequentialCommand {
+public class PosOuttakePixel extends SequentialCommand {
 
-    public OuttakePixel() {
+    public PosOuttakePixel() {
         super(
                 new SlidesMove(Slides.TurnValue.PLACE.getTicks()),
                 new ParallelCommand(

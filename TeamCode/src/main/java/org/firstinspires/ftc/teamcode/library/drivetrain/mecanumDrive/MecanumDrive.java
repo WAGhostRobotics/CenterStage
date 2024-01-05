@@ -71,7 +71,6 @@ public class MecanumDrive implements Drivetrain {
         // -1 -1 1 1
 
         // 1 -1 -1 1
-        //
 
     }
 
@@ -129,7 +128,6 @@ public class MecanumDrive implements Drivetrain {
     }
 
 
-
     @Override
     public void drive(double magnitude, double theta, double driveTurn, double movementPower, double voltage){
 
@@ -155,10 +153,6 @@ public class MecanumDrive implements Drivetrain {
         frontRight.setPower(frontRightPower);
         backLeft.setPower(backLeftPower);
         backRight.setPower(backRightPower);
-
-
-
-
 
     }
 

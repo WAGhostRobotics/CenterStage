@@ -11,7 +11,7 @@ public class PixelHolderFunc extends Command {
     boolean intake;
 
     ElapsedTime timer;
-    private final int pixelTime = 200;
+    private final int pixelTime = 400;
 
     public PixelHolderFunc(boolean twoPixels, boolean intake) {
         this.twoPixels = twoPixels;

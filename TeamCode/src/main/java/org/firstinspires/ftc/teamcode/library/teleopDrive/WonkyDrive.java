@@ -39,10 +39,14 @@ public class WonkyDrive {
 
     double velocity;
 
+    double omega;
+
     ElapsedTime time;
+    ElapsedTime turnTimer;
 
     double radius;
 
+    public static double turnTimeWait = 0.4;
 
     double ac;
 
@@ -55,11 +59,12 @@ public class WonkyDrive {
     // fixes the thingy when it does the funny shimmy after overturning, predicts where robot will end
     public static double rotationalDriftConstant = 0; //0.002
     // heading tracking
-    public static double p = 0, i = 0, d = 0;
+    public static double p = 0.019, i = 0.001, d = 0.1;
     // when theres too much weight to one side and one side ends up going faster than the other
     // heavy in back -> make neg
-    public static double turnff = 0 ; // turn feedforward
+    public static double turnff = 0.01 ; // turn feedforward
 
+    public static double kStatic = 0;
 
 //    PIDController headingController = new PIDController(0, 0, 0);
 
@@ -80,6 +85,7 @@ public class WonkyDrive {
         strafeVelocity = 0;
 
         time = new ElapsedTime();
+        turnTimer = new ElapsedTime();
 
         headingController.setIntegrationBounds(-1000000000, 1000000000);
     }
@@ -97,7 +103,6 @@ public class WonkyDrive {
             power = movementPower;
         }
 
-
         //gamepad input (range -1 to 1)
         driveTurn = power * Math.pow(-gamepad2.right_stick_x, 3);
         driveY = power * Math.pow(-gamepad2.left_stick_x, 3);
@@ -108,7 +113,7 @@ public class WonkyDrive {
 
         currentHeading = getCurrentHeading();
 
-        gamepadMagnitude = Range.clip(Math.hypot(driveX, driveY), 0, 1);
+        gamepadMagnitude = kStatic + Range.clip(Math.hypot(driveX, driveY), 0, 1);
         theta = gamepadTheta - currentHeading;
         if(!Double.isNaN(y1)&&!Double.isNaN(y2)&& gamepadMagnitude != 0){
             radius = Math.pow((1+Math.pow(y1,2)), 1.5)/y2;
@@ -120,7 +125,6 @@ public class WonkyDrive {
             ac = 0;
         }
 
-
         headingController.setPID(p, i, d);
         double headingError = getHeadingError();
 
@@ -128,16 +132,24 @@ public class WonkyDrive {
 
 //        if(driveTurn != 0 || (driveX == 0 && driveY == 0)){
         if(driveTurn != 0){
+            turnTimer.reset();
             updateHeading();
             headingController.reset();
-        }else if (Math.abs(headingError) > 0.5 ){
-            driveTurn = headingController.calculate(0, headingError) + turnff * (gamepadMagnitude * Math.sin(Math.toRadians(theta)));
+        }else if (Math.abs(headingError) > 0.5){
+            if (turnTimer.seconds() < turnTimeWait) {
+                updateHeading();
+            } else {
+                driveTurn = headingController.calculate(0, headingError) + turnff * (gamepadMagnitude * Math.sin(Math.toRadians(theta)));
+            }
         }else{
-            headingController.reset();
+            if (turnTimer.seconds() < turnTimeWait) {
+                updateHeading();
+            } else {
+                headingController.reset();
+            }
         }
 
         drive.drive(gamepadMagnitude, theta, driveTurn, 1);
-
     }
 
     public double getHeadingError() {
@@ -157,7 +169,7 @@ public class WonkyDrive {
     }
 
     public String getTelemetry(){
-        return "Angle: " + localizer.getHeadingImu() + "\nAngular velocity: " + localizer.getAngularVelocityImu() ;
+        return "Angle: " + localizer.getHeadingImu() + "\nOmega: " + omega + "\nim dying" + (Math.signum(omega) * 0.5 * Math.pow(omega, 2) * rotationalDriftConstant);
 
     }
 
@@ -183,7 +195,6 @@ public class WonkyDrive {
                 Math.pow(((currentX-lastx)/t), 2) + Math.pow(((currentY-lasty)/t), 2)
         );   //pythagorean theorme :)
 
-
         lasty1 = y1;
         lastx = currentX;
         lasty = currentY;
@@ -193,7 +204,7 @@ public class WonkyDrive {
 
     public void updateHeading(){
 
-        double omega = localizer.getAngularVelocityImu();
+        omega = localizer.getAngularVelocityImu();
 
         lastHeading = normalizeDegrees(getCurrentHeading() + Math.signum(omega) * 0.5 * Math.pow(omega, 2) * rotationalDriftConstant);
     }
@@ -206,15 +217,17 @@ public class WonkyDrive {
         return localizer.getRawX();
     }
 
-
     //gets angle from imu
     public double getCurrentHeading() {
         return localizer.getHeadingImu();
     }
 
-
     public double getStrafeVelo(){
         return strafeVelocity;
+    }
+
+    public double getLastHeading() {
+        return lastHeading;
     }
 
 }

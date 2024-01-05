@@ -22,17 +22,15 @@ public class MotionPlanner {
     private Drivetrain drive;
     private Localizer localizer;
 
-    public static double p, i, d;
-
     //    private PIDController translationalControl = new PIDController(0.022,0.001,0.03);
-    public static PIDController translationalControl = new PIDController(p,i,d);
+    public static PIDController translationalControl = new PIDController(0.01, 0.0001, 0);
     public static PIDController headingControl = new PIDController(0.001, 0, 0);
 
     //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
 //    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
-    public static PIDController translationalControlEndX = new PIDController(0.02,0,0.5);
+    public static PIDController translationalControlEndX = new PIDController(0.01,0.0001,0.5);
     public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
-    public static PIDController headingControlEnd = new PIDController(0.0075, 0.00025, 0); //i=0.0226
+    public static PIDController headingControlEnd = new PIDController(0.0011, 0.0002, 0); // hope
 
 
     private int index;

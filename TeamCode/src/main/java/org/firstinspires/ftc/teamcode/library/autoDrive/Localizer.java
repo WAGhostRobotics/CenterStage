@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.library.autoDrive;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.component.Imu;
 import org.firstinspires.ftc.teamcode.component.OldImu;
@@ -14,7 +15,7 @@ public class Localizer {
     private Encoder frontEncoder;
     private Encoder leftEncoder;
 
-    private OldImu imu;
+    private Imu imu;
 
     public static double TICKS_PER_REV = 8192;
     public static double WHEEL_RADIUS = 0.689; // in
@@ -47,16 +48,16 @@ public class Localizer {
     public static double Y_MULTIPLIER = 1; // Multiplier in the Y direction
 
 
-
     public Localizer(LinearOpMode opMode, HardwareMap hardwareMap, boolean twoWheel){
-        imu = new OldImu(hardwareMap);
+        imu = new Imu(hardwareMap);
         imu.initImuThread(opMode);
+
         reset();
     }
 
     public Localizer(LinearOpMode opMode, HardwareMap hardwareMap){
 
-        imu = new OldImu(hardwareMap);
+        imu = new Imu(hardwareMap);
         imu.initImuThread(opMode);
 
         rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rr"));
@@ -72,7 +73,6 @@ public class Localizer {
         leftEncoder.reset();
 
         reset();
-
     }
 
     public void reset(){
@@ -82,6 +82,7 @@ public class Localizer {
         lastHeading = 0;
         lastX = 0;
         lastY = 0;
+
     }
 
     public double getX(){
@@ -112,8 +113,8 @@ public class Localizer {
 
         lastX = rawX;
         lastY = rawY;
-        lastHeading = heading;
 
+        lastHeading = heading;
     }
 
     public void calculateRawValues(){

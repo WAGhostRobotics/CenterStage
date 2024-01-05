@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.component;
 
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
@@ -11,18 +13,17 @@ public class Slides {
 
     private DcMotorEx slide1;
     private DcMotorEx slide2;
-    private final double POWER = 1;
     private final double ERROR = 67.5;
 
-    private final double minPower = 0.3;
-    private final double maxPower = 1;
+    private final double zeroPwr = 0;
 
     private double stallCurrent = 5.9;
 
+    private PIDController slideController = new PIDController(0.006, 0.0006,0);
 
     public enum TurnValue {
-        SUPER_RETRACTED(-49),
-        RETRACTED(0),
+        SUPER_RETRACTED(-300),
+        RETRACTED(550),
         INTAKE(0),
         PLACE(920), // 880
         CLIMB(1960); //880
@@ -41,20 +42,20 @@ public class Slides {
     public void init(HardwareMap hwMap, boolean teleop) {
         if(teleop){
             slide1 = hwMap.get(DcMotorEx.class, "slide1");
-            slide1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            slide1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             slide1.setDirection(DcMotorSimple.Direction.REVERSE);
 
             slide2 = hwMap.get(DcMotorEx.class, "slide2");
-            slide2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            slide2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         }else{
             slide1 = hwMap.get(DcMotorEx.class, "slide1");
-            slide1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            slide1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             slide1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             slide1.setDirection(DcMotorSimple.Direction.REVERSE);
 
             slide2 = hwMap.get(DcMotorEx.class, "slide2");
-            slide2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            slide2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             slide2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
 
@@ -64,6 +65,8 @@ public class Slides {
     }
 
     public void setTargetPosition(int targetPos){
+        slide1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        slide2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         slide1.setTargetPosition(targetPos);
         slide2.setTargetPosition(targetPos);
     }
@@ -77,34 +80,13 @@ public class Slides {
             slide1.setTargetPosition(0);
             slide2.setTargetPosition(0);
         }else{
-            int multiplier = 1;
+            double pw = Range.clip(slideController.calculate(0, slide1.getTargetPosition() - slide1.getCurrentPosition()), -1, 1);
+            // sets power and mode
+            slide1.setPower(pw);
+            slide2.setPower(pw);
+          }
 
-            if(slide1.getCurrentPosition()> slide1.getTargetPosition()){
-                multiplier = -1;
-            }
-            //sets power and mode
-            slide1.setPower(multiplier * POWER);
-            slide1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            slide2.setPower(multiplier * POWER);
-            slide2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
-    }
-
-    public void moveToPosition(int ticks){
-        int multiplier = 1;//positive if the claw needs to go up, negative if it needs to go down
-
-        if(slide1.getCurrentPosition()>ticks){
-            multiplier = -1;
-        }
-        slide1.setTargetPosition(ticks);
-        slide2.setTargetPosition(ticks);
-
-        //sets power and mode
-        slide1.setPower(multiplier * POWER);
-        slide1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        slide2.setPower(multiplier * POWER);
-        slide2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public double getCurrent1(){
@@ -115,7 +97,19 @@ public class Slides {
         return slide2.getCurrent(CurrentUnit.AMPS);
     }
 
+    public void goUp() {
+//        slide1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        slide2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        slide1.setPower(1);
+        slide2.setPower(1);
+    }
 
+    public void goDown() {
+//        slide1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        slide2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        slide1.setPower(-1);
+        slide2.setPower(-1);
+    }
 
     public int getTicks(){
         return slide1.getCurrentPosition();
@@ -134,7 +128,8 @@ public class Slides {
     }
 
     public void stopArm(){
-        slide1.setPower(0);
-        slide2.setPower(0);
+        // value added to prevent sliding down
+        slide1.setPower(zeroPwr + slide1.getCurrentPosition() * 0.000005);
+        slide2.setPower(zeroPwr + slide1.getCurrentPosition() * 0.000005);
     }
 }

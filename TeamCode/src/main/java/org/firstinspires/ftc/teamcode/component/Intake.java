@@ -20,8 +20,7 @@ public class Intake {
         PIXEL2(0.2),
         PIXEL3(0.3),
         PIXEL4(0.4),
-        PIXEL5(0.5),
-        COLLAPSED(0.362);
+        PIXEL5(0.5);
 
         double position;
         IntakeHeight(double position) {
@@ -37,7 +36,7 @@ public class Intake {
         intake = hwMap.get(DcMotor.class, "intake");
         height = hwMap.get(Servo.class, "height");
         sushi = hwMap.get(CRServo.class, "sushi");
-        sushi.setDirection(DcMotorSimple.Direction.REVERSE);
+//        sushi.setDirection(DcMotorSimple.Direction.REVERSE);
 //        height.setDirection(Servo.Direction.REVERSE);
     }
 
@@ -56,14 +55,6 @@ public class Intake {
     }
     public void setHeight(IntakeHeight goTo) {
         height.setPosition(goTo.getPosition());
-    }
-
-    public void adjustHeight(boolean up) {
-        if (up) {
-            height.setPosition(height.getPosition() + 0.005);
-        } else {
-            height.setPosition(height.getPosition() - 0.005);
-        }
     }
 
     public double getHeight() {

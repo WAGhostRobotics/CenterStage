@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.library.teleopDrive.WonkyDrive;
 @TeleOp(name = "Wonk Tuner", group = "competition")
 public class WonkTuner extends LinearOpMode {
 
-    public double power = 0.9;
+    public double power = 1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -42,16 +42,17 @@ public class WonkTuner extends LinearOpMode {
 
             //DRIVETRAIN STUFF
 //            // re-initializes imu to correct heading if teleop starts at the wrong heading
-//            if (gamepad2.left_stick_button){
-//                Tom.initIMU();
-//            }
+            if (gamepad2.left_stick_button){
+                localizer.initImu();
+            }
 
             wonk.drive(gamepad2, power);
 
-            telemetry.addData("Target", 0);
             telemetry.addData("Angle Error", wonk.getHeadingError());
             telemetry.addData("Strafe Accel", wonk.getStrafeVelo());
             telemetry.addData("Heading", wonk.getCurrentHeading());
+            telemetry.addData("", wonk.getTelemetry());
+            telemetry.addData("Last heading", wonk.getLastHeading());
             telemetry.update();
         }
     }

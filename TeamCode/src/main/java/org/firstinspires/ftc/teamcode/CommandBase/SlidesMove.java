@@ -20,7 +20,6 @@ public class SlidesMove extends Command {
     @Override
     public void update() {
         Gnocchi.slides.setTargetPosition(ticks);
-//                Gnocchi.slides.update();
     }
 
     @Override

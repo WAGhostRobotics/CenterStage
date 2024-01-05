@@ -48,7 +48,7 @@ public class Gnocchi {
         intake.init(hwMap);
 
         slides = new Slides();
-        slides.init(hwMap, true);
+        slides.init(hwMap, false);
 
 //        launcher = new Launcher();
 //        launcher.init(hwMap);
