@@ -1,21 +1,23 @@
 package org.firstinspires.ftc.teamcode.library.vision;
 
-import com.acmerobotics.dashboard.config.Config;
-
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-@Config
+import java.util.ArrayList;
+import java.util.List;
+
 public class SpikeDetect extends OpenCvPipeline {
     Mat mat = new Mat();
-
     Scalar lowHSV;
     Scalar highHSV;
+    private double contourArea;
+    private Point propCenter = new Point(-1, -1);
 
     //HSV Ranges for red and blue
     //TODO: tune if necessary
@@ -24,8 +26,8 @@ public class SpikeDetect extends OpenCvPipeline {
             lowHSV = new Scalar(0, 128, 100);
             highHSV = new Scalar(20, 255, 255);
         } else {
-            lowHSV = new Scalar(110, 200, 50);
-            highHSV = new Scalar(130, 255, 255);
+            lowHSV = new Scalar(90, 100, 100);
+            highHSV = new Scalar(110, 255, 255);
         }
     }
 
@@ -36,24 +38,13 @@ public class SpikeDetect extends OpenCvPipeline {
         RIGHT
     }
 
-    double leftValue;
-    double midValue;
-    double rightValue;
-
     //location
-    private Location location;
+    private SpikeDetect.Location location;
 
     //Region of interest coordinates
-    //TODO: change ROI coordinates if necessary
-    public static final Rect LEFT_ROI = new Rect(
-            new Point(0, 0),
-            new Point(400, 720));
-    public static final Rect MID_ROI = new Rect(
-            new Point(440, 0),
-            new Point(840, 720));
-    public static final Rect RIGHT_ROI = new Rect(
-            new Point(880, 0),
-            new Point(1280, 720));
+    //TODO: change gap coordinates if necessary
+    final static double spikeGapX = 535;
+    final static double contourAreaThreshold = 25000;
 
     @Override
     public Mat processFrame(Mat input) {
@@ -62,51 +53,65 @@ public class SpikeDetect extends OpenCvPipeline {
         //creates submatrices
         Core.inRange(mat, lowHSV, highHSV, mat);
 
-        Mat left = mat.submat(LEFT_ROI);
-        Mat mid = mat.submat(MID_ROI);
-        Mat right = mat.submat(RIGHT_ROI);
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
 
-        //finds the raw value that fits in HSV range
-        leftValue = Core.sumElems(left).val[0] / LEFT_ROI.area() / 255;
-        midValue = Core.sumElems(mid).val[0] / MID_ROI.area() / 255;
-        rightValue = Core.sumElems(right).val[0] / RIGHT_ROI.area() / 255;
+        int largestContourIdx = 0;
 
-        left.release();
-        mid.release();
-        right.release();
+        Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
-        //stuff to make the gray scale appear on on robot phone
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB);
+        //skips contour calculations if there are no contours
+        if (contours.size() == 0) {
+            contourArea = 0;
+            propCenter = new Point(-1, -1);
+            hierarchy.release();
 
-        //select location region and draw rectangle on it
-        if (leftValue > midValue && leftValue > rightValue) {
-            location = Location.LEFT;
-            Imgproc.rectangle(mat, LEFT_ROI, new Scalar(255, 0, 0), 5);
-        } else if (midValue > rightValue) {
-            location = Location.MID;
-            Imgproc.rectangle(mat, MID_ROI, new Scalar(255, 0, 0), 5);
-        } else {
-            location = Location.RIGHT;
-            Imgproc.rectangle(mat, RIGHT_ROI, new Scalar(255, 0, 0), 5);
+            //stuff to make the gray scale appear on on robot phone
+            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB);
+
+            return input;
         }
 
-        return mat;
+        //finds the largest contour
+        for (int contourIdx=0; contourIdx < contours.size(); contourIdx++) {
+            if (Imgproc.contourArea(contours.get(contourIdx)) > Imgproc.contourArea(contours.get(largestContourIdx))) {
+                largestContourIdx = contourIdx;
+            }
+        }
+
+        contourArea = Imgproc.contourArea(contours.get(largestContourIdx));
+
+        //gets moments and center from contour
+        Moments moments = Imgproc.moments(contours.get(largestContourIdx));
+        propCenter = new Point(moments.get_m10() / moments.get_m00(), moments.get_m01() / moments.get_m00());
+
+        hierarchy.release();
+
+        //select location region and draw rectangle on it
+        if (contourArea < contourAreaThreshold || propCenter.x < 0) {
+            location = SpikeDetect.Location.RIGHT;
+            //Imgproc.drawContours(input, contours, largestContourIdx, new Scalar(0, 255, 0), 3);
+            //Imgproc.circle(input, propCenter, 5, new Scalar(0,255,0), 3);
+        }
+        else if (propCenter.x >= spikeGapX) {
+            location = SpikeDetect.Location.MID;
+            Imgproc.drawContours(input, contours, largestContourIdx, new Scalar(0, 255, 0), 3);
+            Imgproc.circle(input, propCenter, 5, new Scalar(0,255,0), 3);
+        } else {
+            location = SpikeDetect.Location.LEFT;
+            Imgproc.drawContours(input, contours, largestContourIdx, new Scalar(0, 255, 0), 3);
+            Imgproc.circle(input, propCenter, 5, new Scalar(0,255,0), 3);
+        }
+
+        return input;
     }
 
     //some methods to get constants and vars
-    public Location getLocation() {
+    public SpikeDetect.Location getLocation() {
         return location;
     }
 
-    public String getLeft() {
-        return Math.round(leftValue * 100) + "%";
-    }
+    public double getContourArea() { return contourArea; }
 
-    public String getMid() {
-        return Math.round(midValue * 100) + "%";
-    }
-
-    public String getRight() {
-        return Math.round(rightValue * 100) + "%";
-    }
+    public Point getPropCenter() { return propCenter; }
 }
