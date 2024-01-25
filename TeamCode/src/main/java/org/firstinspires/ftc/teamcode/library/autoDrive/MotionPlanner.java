@@ -24,13 +24,13 @@ public class MotionPlanner {
 
     //    private PIDController translationalControl = new PIDController(0.022,0.001,0.03);
     public static PIDController translationalControl = new PIDController(0.01, 0.0001, 0);
-    public static PIDController headingControl = new PIDController(0.001, 0, 0);
+    public static PIDController headingControl = new PIDController(0.001, 0.0005, 0);
 
     //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
 //    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
-    public static PIDController translationalControlEndX = new PIDController(0.01,0.0001,0.5);
+    public static PIDController translationalControlEndX = new PIDController(0.009,0.0001,0.5);
     public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
-    public static PIDController headingControlEnd = new PIDController(0.0011, 0.0002, 0); // hope
+    public static PIDController headingControlEnd = new PIDController(0.0081, 0.002, 0); // hope
 
 
     private int index;
@@ -69,9 +69,9 @@ public class MotionPlanner {
 
     private final double movementPower = 0.85;
     public static double kStatic = 0.31; //.19
-    private final double translational_error = 0.25;
+    private final double translational_error = 1;
     private final double heading_error = 3;
-    private final double endTrajThreshhold = 12;
+    private final double endTrajThreshhold = 15;
     public static final double tIncrement = 0.05;
 
 
@@ -153,7 +153,9 @@ public class MotionPlanner {
 //                "\n " + drive.getTelemetry() +
                 "\n Finished " + isFinished()+
                 "\n Loop Rate " + numLoops/loopTime.seconds() +
-                "\n Heading: " + localizer.getTelemetry();
+                "\n Heading: " + localizer.getTelemetry() +
+                "\n X: " + localizer.getX() +
+                "\n Y: " + localizer.getY();
     }
 
     public double getPerpendicularError(){

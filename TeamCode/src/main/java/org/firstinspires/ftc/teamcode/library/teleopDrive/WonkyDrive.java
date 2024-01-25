@@ -113,7 +113,7 @@ public class WonkyDrive {
 
         currentHeading = getCurrentHeading();
 
-        gamepadMagnitude = kStatic + Range.clip(Math.hypot(driveX, driveY), 0, 1);
+        gamepadMagnitude = (1-kStatic) * (Range.clip(Math.hypot(driveX, driveY), 0, 1) - 1) + 1;
         theta = gamepadTheta - currentHeading;
         if(!Double.isNaN(y1)&&!Double.isNaN(y2)&& gamepadMagnitude != 0){
             radius = Math.pow((1+Math.pow(y1,2)), 1.5)/y2;

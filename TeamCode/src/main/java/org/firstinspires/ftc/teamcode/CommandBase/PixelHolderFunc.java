@@ -11,7 +11,8 @@ public class PixelHolderFunc extends Command {
     boolean intake;
 
     ElapsedTime timer;
-    private final int pixelTime = 400;
+    private final int pixelTime = 1000;
+
 
     public PixelHolderFunc(boolean twoPixels, boolean intake) {
         this.twoPixels = twoPixels;
@@ -24,22 +25,23 @@ public class PixelHolderFunc extends Command {
             timer = new ElapsedTime();
             timer.reset();
         }
+        if (intake) {
+            Gnocchi.mainSail.pixelDrop.setPower(1);
+        } else {
+            Gnocchi.mainSail.pixelDrop.setPower(-1);
+        }
     }
 
     @Override
     public void update() {
-        if (intake) {
-            Gnocchi.mainSail.in();
-        } else {
-            Gnocchi.mainSail.out();
-        }
     }
 
     @Override
     public boolean isFinished() {
-        if (twoPixels) {
-            return timer.milliseconds() >= pixelTime * 2;
+        boolean finished = timer.milliseconds() >= pixelTime;
+        if (finished) {
+            Gnocchi.mainSail.pixelDrop.setPower(0);
         }
-        return timer.milliseconds() >= pixelTime;
+        return finished;
     }
 }

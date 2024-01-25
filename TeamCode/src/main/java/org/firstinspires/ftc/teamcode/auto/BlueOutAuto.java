@@ -7,6 +7,8 @@ public class BlueOutAuto extends AutoParent{
 
     @Override
     public void runOpMode() throws InterruptedException {
+        super.startPos = StartPos.OUT;
+        super.red = false;
         super.runOpMode();
     }
 }

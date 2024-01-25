@@ -23,8 +23,10 @@ public class SpikeDetect extends OpenCvPipeline {
     //TODO: tune if necessary
     public SpikeDetect(boolean redAlliance) {
         if (redAlliance) {
-            lowHSV = new Scalar(0, 128, 100);
-            highHSV = new Scalar(20, 255, 255);
+            lowHSV = new Scalar(-15, 64, 16);
+            highHSV = new Scalar(15, 255, 255);
+//            lowHSV = new Scalar(90, 100, 100);
+//            highHSV = new Scalar(110, 255, 255);
         } else {
             lowHSV = new Scalar(90, 100, 100);
             highHSV = new Scalar(110, 255, 255);
@@ -44,7 +46,7 @@ public class SpikeDetect extends OpenCvPipeline {
     //Region of interest coordinates
     //TODO: change gap coordinates if necessary
     final static double spikeGapX = 535;
-    final static double contourAreaThreshold = 25000;
+    final static double contourAreaThreshold = 20000;
 
     @Override
     public Mat processFrame(Mat input) {

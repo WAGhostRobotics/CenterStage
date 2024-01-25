@@ -19,13 +19,13 @@ public class Slides {
 
     private double stallCurrent = 5.9;
 
-    private PIDController slideController = new PIDController(0.006, 0.0006,0);
+    private PIDController slideController = new PIDController(0.003, 0.0006,0); //0.006
 
     public enum TurnValue {
         SUPER_RETRACTED(-300),
         RETRACTED(550),
         INTAKE(0),
-        PLACE(920), // 880
+        PLACE(700), // 880
         CLIMB(1960); //880
 
         int ticks;
@@ -129,7 +129,7 @@ public class Slides {
 
     public void stopArm(){
         // value added to prevent sliding down
-        slide1.setPower(zeroPwr + slide1.getCurrentPosition() * 0.000005);
-        slide2.setPower(zeroPwr + slide1.getCurrentPosition() * 0.000005);
+        slide1.setPower(zeroPwr + slide1.getCurrentPosition() * 0.000008);
+        slide2.setPower(zeroPwr + slide1.getCurrentPosition() * 0.000008);
     }
 }

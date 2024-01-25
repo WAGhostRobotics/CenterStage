@@ -8,7 +8,7 @@ public class MainSail {
 
     private Servo pixelHold;
     private Servo arm;
-    private CRServo pixelDrop;
+    public CRServo pixelDrop;
 
     private final double PERMISSIBLE_ERROR = 0.01;
 
@@ -16,11 +16,12 @@ public class MainSail {
     private double armPos;
 
     public enum ArmPos {
-        RETRACT(0.0855),
-        INTAKE(0.0855),
-        PLACE(0.619),
-        MID(0.165),
-        SPIKE(0.745);
+        RETRACT(0.1094),
+        INTAKE(0.1094),
+        PLACE(0.75),
+        MID(0.2044),
+        SPIKE(0.7618),
+        UP(0.8);
 
         private double position;
 
@@ -33,10 +34,10 @@ public class MainSail {
 
     public enum HolderPos {
         // 0.0875
-        RETRACT(0.0),
-        INTAKE(0.0),
+        RETRACT(0.3477),
+        INTAKE(0.3477),
         SPIKE(0.1),
-        PLACE(0.137);
+        PLACE(0.1854);
 
         private double position;
 
@@ -52,6 +53,7 @@ public class MainSail {
         pixelHold = hwMap.get(Servo.class, "pixelHolder");
         pixelDrop = hwMap.get(CRServo.class, "pixelDrop");
 
+        pixelHold.setDirection(Servo.Direction.REVERSE);
 //        pixelDrop.setDirection(DcMotorSimple.Direction.REVERSE);
 
         arm.setPosition(ArmPos.INTAKE.getPosition());

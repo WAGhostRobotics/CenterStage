@@ -15,7 +15,7 @@ public class Intake {
 
     public enum IntakeHeight {
         GROUND(0),
-        INTAKE(0.35),
+        INTAKE(0.37),
         PIXEL1(0.1),
         PIXEL2(0.2),
         PIXEL3(0.3),
@@ -47,6 +47,7 @@ public class Intake {
 
     public void out() {
         intake.setPower(-power);
+        sushi.setPower(-1);
     }
 
     public void stop() {

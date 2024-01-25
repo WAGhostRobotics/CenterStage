@@ -7,6 +7,8 @@ public class RedInAuto extends AutoParent{
 
     @Override
     public void runOpMode() throws InterruptedException {
+        super.red = true;
+        super.startPos = StartPos.IN;
         super.runOpMode();
     }
 }

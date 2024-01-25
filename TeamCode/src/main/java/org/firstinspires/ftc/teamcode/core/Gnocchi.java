@@ -33,7 +33,7 @@ public class Gnocchi {
     public static Slides slides;
 //    public static Launcher launcher;
 
-    public static void init(HardwareMap hwMap) {
+    public static void init(HardwareMap hwMap, boolean redAlliance) {
         hardwareMap = hwMap;
 
         frontLeft = hwMap.get(DcMotorEx.class, "lf");
@@ -49,6 +49,8 @@ public class Gnocchi {
 
         slides = new Slides();
         slides.init(hwMap, false);
+
+        webcam = new Webcam(redAlliance);
 
 //        launcher = new Launcher();
 //        launcher.init(hwMap);

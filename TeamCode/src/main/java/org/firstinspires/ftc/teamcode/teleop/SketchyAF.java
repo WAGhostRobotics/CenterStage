@@ -26,9 +26,9 @@ import org.firstinspires.ftc.teamcode.library.teleopDrive.WonkyDrive;
 @TeleOp(name = "sketchyaf")
 public class SketchyAF extends LinearOpMode {
 
-    public double power = 1;
     public boolean pos = false;
     public boolean slidesInPos = true;
+    boolean out = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -39,18 +39,18 @@ public class SketchyAF extends LinearOpMode {
          * gamepad1 -> everything else
          */
 
-        GamepadEx driverOp = new GamepadEx(gamepad2);
-        ToggleButtonReader rightStickReader = new ToggleButtonReader(
-                driverOp, GamepadKeys.Button.RIGHT_STICK_BUTTON
+        GamepadEx driverOp = new GamepadEx(gamepad1);
+        ToggleButtonReader bReader = new ToggleButtonReader(
+                driverOp, GamepadKeys.Button.B
         );
 
-        Gnocchi.init(hardwareMap);
+        Gnocchi.init(hardwareMap, false);
 
         IntakePixel intakePixel = new IntakePixel();
 
-        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
+//        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
         Drivetrain drive = new MecanumDrive(hardwareMap);
-        WonkyDrive wonk = new WonkyDrive(this, hardwareMap, localizer, drive);
+//        WonkyDrive wonk = new WonkyDrive(this, hardwareMap, localizer, drive);
 
         waitForStart();
 
@@ -59,22 +59,34 @@ public class SketchyAF extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            wonk.drive(gamepad2, power);
+            double driveTurn = Math.pow(-gamepad2.right_stick_x, 3);
+            double driveY = Math.pow(-gamepad2.left_stick_x, 3);
+            double driveX = Math.pow(-gamepad2.left_stick_y, 3);
+            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, 0.8);
 
-            //re-initializes imu to correct heading if teleop starts at the wrong heading
-            if (gamepad2.left_stick_button){
-                localizer.initImu();
-            }
+//            wonk.drive(gamepad2, 1);
+
+//            //re-initializes imu to correct heading if teleop starts at the wrong heading
+//            if (gamepad2.left_stick_button){
+//                localizer.initImu();
+//            }
+
+            telemetry.addData("AHHH", out);
 
             // INTAKE/OUTTAKE
-            if (gamepad1.a) {
-                Gnocchi.mainSail.moveArm(MainSail.ArmPos.INTAKE.getPosition());
-                Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.INTAKE.getPosition());
-            } else if (gamepad1.b) {
-                intakePixel.stop();
+            if (bReader.wasJustReleased() && out) {
+                    Gnocchi.mainSail.moveArm(MainSail.ArmPos.INTAKE.getPosition());
+                    Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.INTAKE.getPosition());
+                out = false;
+            } else if (bReader.wasJustReleased() && !out) {
                 Gnocchi.mainSail.moveArm(MainSail.ArmPos.PLACE.getPosition());
                 Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.PLACE.getPosition());
+                out = true;
             }
+
+//            if (gamepad1.a) {
+//                airplane
+//            }
 
             if (gamepad1.x) {
                 Gnocchi.mainSail.out();
@@ -97,7 +109,7 @@ public class SketchyAF extends LinearOpMode {
                 Gnocchi.intake.setHeight(Intake.IntakeHeight.INTAKE);
                 Gnocchi.intake.out();
             }
-            else if (!gamepad1.x){
+            else if (!gamepad1.x && !gamepad1.dpad_left){
                 Gnocchi.mainSail.stop();
                 Gnocchi.intake.stop();
                 Gnocchi.intake.setHeight(Intake.IntakeHeight.GROUND);
@@ -112,6 +124,8 @@ public class SketchyAF extends LinearOpMode {
 
             if (gamepad1.y) {
                 // retract & get ready for intake
+                pos = true;
+                out = false;
                 intakePixel.init();
             }
 
@@ -123,6 +137,7 @@ public class SketchyAF extends LinearOpMode {
 
             if (gamepad1.dpad_up) {
                 intakePixel.stop();
+                out = true;
                 Gnocchi.slides.setTargetPosition(Slides.TurnValue.CLIMB.getTicks());
                 pos = true;
             }
@@ -130,7 +145,10 @@ public class SketchyAF extends LinearOpMode {
             if (gamepad1.right_bumper) {
                 intakePixel.stop();
                 pos = false;
+                out = true;
                 Gnocchi.slides.goUp();
+                Gnocchi.mainSail.moveArm(MainSail.ArmPos.PLACE.getPosition());
+                Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.PLACE.getPosition());
             } else if (gamepad1.left_bumper) {
                 intakePixel.stop();
                 pos = false;
@@ -150,8 +168,9 @@ public class SketchyAF extends LinearOpMode {
 //            }
 
             intakePixel.update();
+            bReader.readValue();
 
-            telemetry.addData("Arm", Gnocchi.mainSail.armAtIntake());
+            telemetry.addData("Finished", intakePixel.isFinished());
             telemetry.addData("Slides", Gnocchi.slides.getTicks());
             telemetry.update();
         }

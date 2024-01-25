@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.component;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -23,7 +24,7 @@ public class Webcam {
     OpenCvWebcam webcam;
 
     SpikeDetect spikePipe;
-    AprilTagDetect aprilTagPipe;
+    // AprilTagDetect aprilTagPipe;
     PixelDetect pixelPipe;
 
     // Lens intrinsics
@@ -55,10 +56,11 @@ public class Webcam {
         WebcamName webcamName;
         webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
+        FtcDashboard.getInstance().startCameraStream(webcam, 0);
 
         // pipelines
         spikePipe = new SpikeDetect(redAlliance);
-        aprilTagPipe = new AprilTagDetect(tagsize, fx, fy, cx, cy);
+        // aprilTagPipe = new AprilTagDetect(tagsize, fx, fy, cx, cy);
         pixelPipe = new PixelDetect();
 
         webcam.setPipeline(spikePipe);
@@ -76,7 +78,7 @@ public class Webcam {
         });
     }
 
-    public void scanForTags(){
+    public void scanForTags(AprilTagDetect aprilTagPipe){
         webcam.setPipeline(aprilTagPipe);
         ArrayList<AprilTagDetection> currentDetections = aprilTagPipe.getLatestDetections();
 
@@ -110,7 +112,7 @@ public class Webcam {
     }
 
     public void scanForLocation() {
-        webcam.setPipeline(spikePipe);
+        //webcam.setPipeline(spikePipe);
         location = spikePipe.getLocation();
 
         switch (location) {
@@ -131,7 +133,7 @@ public class Webcam {
     }
 
     public SpikeDetect.Location getLocation(){
-        return location;
+        return spikePipe.getLocation();
     }
 
     public AprilTagDetection getTagOfInterest(){

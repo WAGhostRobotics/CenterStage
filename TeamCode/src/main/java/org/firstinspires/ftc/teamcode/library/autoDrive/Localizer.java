@@ -15,7 +15,7 @@ public class Localizer {
     private Encoder frontEncoder;
     private Encoder leftEncoder;
 
-    private Imu imu;
+    private OldImu imu;
 
     public static double TICKS_PER_REV = 8192;
     public static double WHEEL_RADIUS = 0.689; // in
@@ -49,7 +49,7 @@ public class Localizer {
 
 
     public Localizer(LinearOpMode opMode, HardwareMap hardwareMap, boolean twoWheel){
-        imu = new Imu(hardwareMap);
+        imu = new OldImu(hardwareMap);
         imu.initImuThread(opMode);
 
         reset();
@@ -57,7 +57,7 @@ public class Localizer {
 
     public Localizer(LinearOpMode opMode, HardwareMap hardwareMap){
 
-        imu = new Imu(hardwareMap);
+        imu = new OldImu(hardwareMap);
         imu.initImuThread(opMode);
 
         rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rr"));
