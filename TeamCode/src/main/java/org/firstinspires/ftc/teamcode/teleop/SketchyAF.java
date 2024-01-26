@@ -29,6 +29,7 @@ public class SketchyAF extends LinearOpMode {
     public boolean pos = false;
     public boolean slidesInPos = true;
     boolean out = false;
+    double movementPwr = 0.8;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -42,6 +43,11 @@ public class SketchyAF extends LinearOpMode {
         GamepadEx driverOp = new GamepadEx(gamepad1);
         ToggleButtonReader bReader = new ToggleButtonReader(
                 driverOp, GamepadKeys.Button.B
+        );
+
+        GamepadEx driverOp2 = new GamepadEx(gamepad2);
+        ToggleButtonReader stick = new ToggleButtonReader(
+                driverOp2, GamepadKeys.Button.RIGHT_STICK_BUTTON
         );
 
         Gnocchi.init(hardwareMap, false);
@@ -59,10 +65,17 @@ public class SketchyAF extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+            // DRIVE
             double driveTurn = Math.pow(-gamepad2.right_stick_x, 3);
             double driveY = Math.pow(-gamepad2.left_stick_x, 3);
             double driveX = Math.pow(-gamepad2.left_stick_y, 3);
-            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, 0.8);
+            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, movementPwr);
+
+            if (stick.wasJustReleased() && movementPwr == 0.8) {
+                movementPwr = 0.5;
+            } else if (stick.wasJustReleased() && movementPwr == 0.5){
+                movementPwr = 0.8;
+            }
 
 //            wonk.drive(gamepad2, 1);
 
@@ -91,11 +104,6 @@ public class SketchyAF extends LinearOpMode {
             if (gamepad1.x) {
                 Gnocchi.mainSail.out();
             }
-
-//            else if (!gamepad1.dpad_left && !gamepad1.dpad_right){
-//                Gnocchi.mainSail.stop();
-//            }
-
 
             if (gamepad1.dpad_left && slidesInPos) {
                 intakePixel.stop();
@@ -161,11 +169,11 @@ public class SketchyAF extends LinearOpMode {
                 Gnocchi.slides.update(); // only update if set to go to a position
             }
 
-//            if (gamepad1.right_trigger >= 0.01) {
-//                Gnocchi.intake.adjustHeight(true);
-//            } else if (gamepad1.left_trigger >= 0.01) {
-//                Gnocchi.intake.adjustHeight(false);
-//            }
+            if (gamepad1.right_trigger >= 0.01) {
+                Gnocchi.mainSail.adjustArm(true);
+            } else if (gamepad1.left_trigger >= 0.01) {
+                Gnocchi.mainSail.adjustArm(false);
+            }
 
             intakePixel.update();
             bReader.readValue();

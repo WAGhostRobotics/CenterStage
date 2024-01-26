@@ -85,12 +85,19 @@ public class AutoParent extends LinearOpMode {
 
                 switch (location) {
                     case RIGHT:
-                        if (!red && startPos == StartPos.IN || red && startPos == StartPos.OUT) {
+                        if (!red && startPos == StartPos.IN) {
                             spike = new Bezier(
                                     -30,
                                     new Point(0, 0),
-                                    new Point(10,-15),
-                                    new Point(21, -8)
+                                    new Point(10,-10),
+                                    new Point(21, -11.5)
+                            );
+                        } else if (red && startPos == StartPos.OUT) {
+                            spike = new Bezier(
+                                    -30,
+                                    new Point(0, 0),
+                                    new Point(10,-13),
+                                    new Point(21, -5)
                             );
                         } else {
                             spike = new Bezier(-120,
@@ -100,9 +107,16 @@ public class AutoParent extends LinearOpMode {
                         aprilTagLocation = red ? Webcam.AprilTagLocation.SIX : Webcam.AprilTagLocation.THREE;
                         break;
                     case MID:
-                        spike = new Bezier(mult*-170,
-                                new Point(0, 0),
-                                new Point(45, -4));
+                        if (!red && startPos == StartPos.IN) {
+                            spike = new Bezier(mult*-170,
+                                    new Point(0, 0),
+                                    new Point(42, 2.5));
+
+                        } else {
+                            spike = new Bezier(mult*-170,
+                                    new Point(0, 0),
+                                    new Point(44, -4));
+                        }
                         aprilTagLocation = red ? Webcam.AprilTagLocation.FIVE : Webcam.AprilTagLocation.TWO;
                         break;
                     case LEFT:
@@ -121,7 +135,7 @@ public class AutoParent extends LinearOpMode {
                             } else {
                                 spike = new Bezier(mult*150,
                                         new Point(0, 0),
-                                        new Point(37, 10));
+                                        new Point(37, 2.5));
 
                             }
                         }
@@ -138,14 +152,14 @@ public class AutoParent extends LinearOpMode {
                                 new Point(25, -20),
                                 new Point(58, 30),
                                 new Point(50, 58),
-                                new Point(14, 80)
+                                new Point(16, 80)
                         );
                     } else {
                         toAprilTags = new Bezier(90,
                                 spike.getEndPoint(),
-                                new Point(40, 20),
+                                new Point(50, 20),
                                 new Point(25, 25),
-                                new Point(10, 32)
+                                new Point(15, 37)
                         );
                     }
                     break;
@@ -162,7 +176,7 @@ public class AutoParent extends LinearOpMode {
                                 spike.getEndPoint(),
                                 new Point(40, 20),
                                 new Point(25, 25),
-                                new Point(17, 32)
+                                new Point(18, 36)
                         );
                     }
                     break;
@@ -171,11 +185,16 @@ public class AutoParent extends LinearOpMode {
                         toAprilTags = new Bezier(90,
                                 spike.getEndPoint(),
                                 new Point(40, 30),
-                                new Point(20, 48),
-                                new Point(18.8, 80)
+                                new Point(30, 48),
+                                new Point(23, 79)
                         );
                     } else {
-
+                        toAprilTags = new Bezier(90,
+                                spike.getEndPoint(),
+                                new Point(17, -4),
+                                new Point(20, 15),
+                                new Point(27, 37)
+                        );
                     }
                     break;
                 case FOUR:
@@ -241,7 +260,7 @@ public class AutoParent extends LinearOpMode {
                         ),
                         new PixelHolderFunc(false, true)
                 ),
-                new Wait(800),
+                new Wait(700),
                 new PosOuttakePixel(),
                 new Wait(500),
                 new PixelHolderFunc(false, false),
