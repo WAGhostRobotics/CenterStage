@@ -90,7 +90,7 @@ public class AutoParent extends LinearOpMode {
                                     -30,
                                     new Point(0, 0),
                                     new Point(10,-10),
-                                    new Point(21, -11.5)
+                                    new Point(21, -10)
                             );
                         } else if (red && startPos == StartPos.OUT) {
                             spike = new Bezier(
@@ -100,9 +100,9 @@ public class AutoParent extends LinearOpMode {
                                     new Point(21, -5)
                             );
                         } else {
-                            spike = new Bezier(-120,
+                            spike = new Bezier(-130,
                                     new Point(0, 0),
-                                    new Point(36, -10));
+                                    new Point(37, -7.5));
                         }
                         aprilTagLocation = red ? Webcam.AprilTagLocation.SIX : Webcam.AprilTagLocation.THREE;
                         break;
@@ -110,24 +110,38 @@ public class AutoParent extends LinearOpMode {
                         if (!red && startPos == StartPos.IN) {
                             spike = new Bezier(mult*-170,
                                     new Point(0, 0),
-                                    new Point(42, 2.5));
+                                    new Point(24, 15),
+                                    new Point(45, 2));
 
+                        } else if (startPos == StartPos.OUT){
+                            spike = new Bezier(mult*-170,
+                                    new Point(0, 0),
+                                    new Point(45, -4));
                         } else {
                             spike = new Bezier(mult*-170,
                                     new Point(0, 0),
+                                    new Point(30, -15),
                                     new Point(44, -4));
                         }
                         aprilTagLocation = red ? Webcam.AprilTagLocation.FIVE : Webcam.AprilTagLocation.TWO;
                         break;
                     case LEFT:
-                        if (!red && startPos == StartPos.OUT || red && startPos == StartPos.IN) {
+                        if (!red && startPos == StartPos.OUT) {
                             spike = new Bezier(
                                     30,
                                     new Point(0, 0),
                                     new Point(10, 10),
                                     new Point(22, 0)
                             );
-                        } else {
+                        } else if (red && startPos == StartPos.IN) {
+                            spike = new Bezier(
+                                    40,
+                                    new Point(0, 0),
+                                    new Point(10, -18),
+                                    new Point(21, 2)
+                            );
+                        }
+                        else {
                             if (red) {
                                 spike = new Bezier(mult * 150,
                                         new Point(0, 0),
@@ -152,7 +166,7 @@ public class AutoParent extends LinearOpMode {
                                 new Point(25, -20),
                                 new Point(58, 30),
                                 new Point(50, 58),
-                                new Point(16, 80)
+                                new Point(17.5, 80)
                         );
                     } else {
                         toAprilTags = new Bezier(90,
@@ -169,14 +183,14 @@ public class AutoParent extends LinearOpMode {
                                 spike.getEndPoint(),
                                 new Point(45, 30),
                                 new Point(30, 48),
-                                new Point(16.2, 79)
+                                new Point(16.7, 79)
                         );
                     } else {
                         toAprilTags = new Bezier(90,
                                 spike.getEndPoint(),
                                 new Point(40, 20),
                                 new Point(25, 25),
-                                new Point(18, 36)
+                                new Point(18, 37.5)
                         );
                     }
                     break;
@@ -206,7 +220,12 @@ public class AutoParent extends LinearOpMode {
                                 new Point(33, -88.5)
                         );
                     } else {
-
+                        toAprilTags = new Bezier(-90,
+                                spike.getEndPoint(),
+                                new Point(17, 4),
+                                new Point(20, -15),
+                                new Point(36, -44)
+                        );
                     }
                     break;
                 case FIVE:
@@ -218,7 +237,12 @@ public class AutoParent extends LinearOpMode {
                                 new Point(31, -88.5)
                         );
                     } else {
-
+                        toAprilTags = new Bezier(-90,
+                                spike.getEndPoint(),
+                                new Point(40, -20),
+                                new Point(25, -25),
+                                new Point(27, -40.5)
+                        );
                     }
                     break;
                 case SIX:
@@ -231,9 +255,19 @@ public class AutoParent extends LinearOpMode {
                                 new Point(27, -88.5)
                         );
                     } else {
-                        toAprilTags = new Bezier();
+                        toAprilTags = new Bezier(-90,
+                                spike.getEndPoint(),
+                                new Point(60, -15),
+                                new Point(32, -18),
+                                new Point(19, -45)
+                        );
                     }
                     break;
+            }
+            if (startPos == StartPos.IN && !red) {
+                park = new Bezier(0, toAprilTags.getEndPoint(), new Point(1, 35.5));
+            } else if (startPos == StartPos.IN) {
+                park = new Bezier(0, toAprilTags.getEndPoint(), new Point(3, -42.5));
             }
         }
 
@@ -248,25 +282,29 @@ public class AutoParent extends LinearOpMode {
                 new PixelHolderFunc(false, false),
                 new Wait(500),
 
+                new PixelHolderFunc(false, true),
+
                 // april tag
                 new ParallelCommand(
                         new SequentialCommand(
                                 new Wait(700),
-                                new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition())
+                                new ParallelCommand(
+                                        new PixelHolderFunc(false, true),
+                                        new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition())
+                                )
                         ),
                         new SequentialCommand(
                                 new Wait(800),
                                 new FollowTrajectory(motionPlanner, toAprilTags)
-                        ),
-                        new PixelHolderFunc(false, true)
+                        )
                 ),
                 new Wait(700),
                 new PosOuttakePixel(),
                 new Wait(500),
                 new PixelHolderFunc(false, false),
                 new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition()),
-                new SlidesMove(Slides.TurnValue.INTAKE.getTicks())
-//                new FollowTrajectory(motionPlanner, park)
+                new SlidesMove(Slides.TurnValue.INTAKE.getTicks()),
+                new FollowTrajectory(motionPlanner, park)
         );
 
         scheduler.init();

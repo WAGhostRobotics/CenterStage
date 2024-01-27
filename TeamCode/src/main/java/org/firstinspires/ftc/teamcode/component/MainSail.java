@@ -20,7 +20,7 @@ public class MainSail {
         INTAKE(0.1094),
         PLACE(0.75),
         MID(0.2044),
-        SPIKE(0.7618),
+        SPIKE(0.7818),
         UP(0.8);
 
         private double position;

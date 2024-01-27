@@ -23,10 +23,8 @@ public class SpikeDetect extends OpenCvPipeline {
     //TODO: tune if necessary
     public SpikeDetect(boolean redAlliance) {
         if (redAlliance) {
-            lowHSV = new Scalar(-15, 64, 16);
+            lowHSV = new Scalar(-10, 64, 16);
             highHSV = new Scalar(15, 255, 255);
-//            lowHSV = new Scalar(90, 100, 100);
-//            highHSV = new Scalar(110, 255, 255);
         } else {
             lowHSV = new Scalar(105, 112, 85);
             highHSV = new Scalar(120, 255, 255);
