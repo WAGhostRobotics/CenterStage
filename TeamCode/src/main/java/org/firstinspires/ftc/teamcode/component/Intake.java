@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.component;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -14,8 +13,8 @@ public class Intake {
     private final double power = 1;
 
     public enum IntakeHeight {
-        GROUND(0),
-        INTAKE(0.37),
+        RETRACT(0.6),
+        INTAKE(0.1916),
         PIXEL1(0.1),
         PIXEL2(0.2),
         PIXEL3(0.3),
@@ -37,7 +36,7 @@ public class Intake {
         height = hwMap.get(Servo.class, "height");
         sushi = hwMap.get(CRServo.class, "sushi");
 //        sushi.setDirection(DcMotorSimple.Direction.REVERSE);
-//        height.setDirection(Servo.Direction.REVERSE);
+        height.setDirection(Servo.Direction.REVERSE);
     }
 
     public void in() {
@@ -54,6 +53,15 @@ public class Intake {
         intake.setPower(0);
         sushi.setPower(0);
     }
+
+    public void up() {
+        height.setPosition(height.getPosition()+0.001);
+    }
+
+    public void down() {
+        height.setPosition(height.getPosition()-0.001);
+    }
+
     public void setHeight(IntakeHeight goTo) {
         height.setPosition(goTo.getPosition());
     }

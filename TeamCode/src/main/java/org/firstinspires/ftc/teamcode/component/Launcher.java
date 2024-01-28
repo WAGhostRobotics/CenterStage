@@ -7,11 +7,12 @@ public class Launcher {
 
     private Servo launcher;
 
-    private final double closePos = 0;
-    private final double openPos = 0.2;
+    private final double closePos = 0.908;
+    private final double openPos = 0.74;
 
     public void init(HardwareMap hwMap) {
         launcher = hwMap.get(Servo.class, "launcher");
+        launcher.setPosition(closePos);
     }
 
     public void launch() {

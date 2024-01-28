@@ -23,9 +23,9 @@ public class Slides {
 
     public enum TurnValue {
         SUPER_RETRACTED(-300),
-        RETRACTED(550),
+        RETRACTED(350),
         INTAKE(0),
-        PLACE(700), // 880
+        PLACE(800), // 880
         CLIMB(1960); //880
 
         int ticks;

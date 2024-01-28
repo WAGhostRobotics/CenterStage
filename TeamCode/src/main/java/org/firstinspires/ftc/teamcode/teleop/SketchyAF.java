@@ -17,11 +17,8 @@ import org.firstinspires.ftc.teamcode.component.Intake;
 import org.firstinspires.ftc.teamcode.component.MainSail;
 import org.firstinspires.ftc.teamcode.component.Slides;
 import org.firstinspires.ftc.teamcode.core.Gnocchi;
-import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
-import org.firstinspires.ftc.teamcode.library.autoDrive.TwoWheelLocalizer;
 import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.MecanumDrive;
-import org.firstinspires.ftc.teamcode.library.teleopDrive.WonkyDrive;
 
 @TeleOp(name = "sketchyaf")
 public class SketchyAF extends LinearOpMode {
@@ -29,7 +26,7 @@ public class SketchyAF extends LinearOpMode {
     public boolean pos = false;
     public boolean slidesInPos = true;
     boolean out = false;
-    double movementPwr = 0.8;
+    double movementPwr = 0.95;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -61,7 +58,7 @@ public class SketchyAF extends LinearOpMode {
         waitForStart();
 
         Gnocchi.slides.setTargetPosition(Slides.TurnValue.RETRACTED.getTicks());
-        Gnocchi.intake.setHeight(Intake.IntakeHeight.GROUND);
+        Gnocchi.intake.setHeight(Intake.IntakeHeight.RETRACT);
 
         while (opModeIsActive()) {
 
@@ -71,10 +68,10 @@ public class SketchyAF extends LinearOpMode {
             double driveX = Math.pow(-gamepad2.left_stick_y, 3);
             drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, movementPwr);
 
-            if (stick.wasJustReleased() && movementPwr == 0.8) {
+            if (stick.wasJustReleased() && movementPwr == 0.95) {
                 movementPwr = 0.5;
             } else if (stick.wasJustReleased() && movementPwr == 0.5){
-                movementPwr = 0.8;
+                movementPwr = 0.95;
             }
 
 //            wonk.drive(gamepad2, 1);
@@ -97,12 +94,12 @@ public class SketchyAF extends LinearOpMode {
                 out = true;
             }
 
-//            if (gamepad1.a) {
-//                airplane
-//            }
-
             if (gamepad1.x) {
                 Gnocchi.mainSail.out();
+            }
+
+            if (gamepad2.dpad_up) {
+                Gnocchi.mainSail.in();
             }
 
             if (gamepad1.dpad_left && slidesInPos) {
@@ -117,10 +114,16 @@ public class SketchyAF extends LinearOpMode {
                 Gnocchi.intake.setHeight(Intake.IntakeHeight.INTAKE);
                 Gnocchi.intake.out();
             }
-            else if (!gamepad1.x && !gamepad1.dpad_left){
+            else if (!gamepad1.x && !gamepad1.dpad_left && !gamepad2.dpad_up && !gamepad1.right_stick_button && !gamepad1.left_stick_button){
                 Gnocchi.mainSail.stop();
                 Gnocchi.intake.stop();
-                Gnocchi.intake.setHeight(Intake.IntakeHeight.GROUND);
+                Gnocchi.intake.setHeight(Intake.IntakeHeight.RETRACT);
+            }
+
+            if (gamepad1.right_stick_button) {
+                Gnocchi.intake.up();
+            } else if (gamepad1.left_stick_button) {
+                Gnocchi.intake.down();
             }
 
             // SLIDES
@@ -173,6 +176,13 @@ public class SketchyAF extends LinearOpMode {
                 Gnocchi.mainSail.adjustArm(true);
             } else if (gamepad1.left_trigger >= 0.01) {
                 Gnocchi.mainSail.adjustArm(false);
+            }
+
+            // LAUNCHER
+            if (gamepad2.x) {
+                Gnocchi.launcher.launch();
+            } else if (gamepad2.y) {
+                Gnocchi.launcher.close();
             }
 
             intakePixel.update();

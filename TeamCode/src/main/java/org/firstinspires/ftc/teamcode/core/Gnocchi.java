@@ -1,16 +1,8 @@
 package org.firstinspires.ftc.teamcode.core;
 
-import com.arcrobotics.ftclib.hardware.RevIMU;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.qualcomm.hardware.bosch.BHI260IMU;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.component.Imu;
 import org.firstinspires.ftc.teamcode.component.Intake;
 import org.firstinspires.ftc.teamcode.component.Launcher;
 import org.firstinspires.ftc.teamcode.component.MainSail;
@@ -31,7 +23,7 @@ public class Gnocchi {
     public static MainSail mainSail; // outtake
     public static Intake intake;
     public static Slides slides;
-//    public static Launcher launcher;
+    public static Launcher launcher;
 
     public static void init(HardwareMap hwMap, boolean redAlliance) {
         hardwareMap = hwMap;
@@ -52,8 +44,8 @@ public class Gnocchi {
 
         webcam = new Webcam(redAlliance);
 
-//        launcher = new Launcher();
-//        launcher.init(hwMap);
+        launcher = new Launcher();
+        launcher.init(hwMap);
     }
 
     /**

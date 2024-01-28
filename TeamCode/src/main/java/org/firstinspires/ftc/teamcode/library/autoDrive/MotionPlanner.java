@@ -28,7 +28,7 @@ public class MotionPlanner {
 
     //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
 //    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
-    public static PIDController translationalControlEndX = new PIDController(0.007,0.0006,0.3);
+    public static PIDController translationalControlEndX = new PIDController(0.005,0.0006,0.3);
     public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
     public static PIDController headingControlEnd = new PIDController(0.003, 0.005, 0); // hope
 
@@ -71,7 +71,7 @@ public class MotionPlanner {
     public static double kStatic = 0.31; //.19
     private final double translational_error = 1;
     private final double heading_error = 3;
-    private final double endTrajThreshhold = 15;
+    private final double endTrajThreshhold = 20;
     public static final double tIncrement = 0.05;
 
 
