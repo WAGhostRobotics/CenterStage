@@ -9,6 +9,7 @@ public class BlueInAuto extends AutoParent{
     public void runOpMode() throws InterruptedException {
         super.startPos = StartPos.IN;
         super.red = false;
+        super.left = true;
         super.runOpMode();
     }
 }

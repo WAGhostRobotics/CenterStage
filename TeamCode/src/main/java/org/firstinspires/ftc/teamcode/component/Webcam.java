@@ -46,9 +46,11 @@ public class Webcam {
     SpikeDetect.Location location = null;
 
     private boolean redAlliance;
+    private boolean left;
 
-    public Webcam(boolean redAlliance){
+    public Webcam(boolean redAlliance, boolean left){
         this.redAlliance = redAlliance;
+        this.left = left;
     }
 
     public void init(HardwareMap hardwareMap){
@@ -59,7 +61,7 @@ public class Webcam {
         FtcDashboard.getInstance().startCameraStream(webcam, 0);
 
         // pipelines
-        spikePipe = new SpikeDetect(redAlliance);
+        spikePipe = new SpikeDetect(redAlliance, left);
         // aprilTagPipe = new AprilTagDetect(tagsize, fx, fy, cx, cy);
         pixelPipe = new PixelDetect();
 

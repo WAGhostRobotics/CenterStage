@@ -18,10 +18,11 @@ public class SpikeDetect extends OpenCvPipeline {
     Scalar highHSV;
     private double contourArea;
     private Point propCenter = new Point(-1, -1);
+    private boolean left;
 
     //HSV Ranges for red and blue
     //TODO: tune if necessary
-    public SpikeDetect(boolean redAlliance) {
+    public SpikeDetect(boolean redAlliance, boolean left) {
         if (redAlliance) {
             lowHSV = new Scalar(-10, 64, 16);
             highHSV = new Scalar(15, 255, 255);
@@ -29,6 +30,7 @@ public class SpikeDetect extends OpenCvPipeline {
             lowHSV = new Scalar(105, 112, 85);
             highHSV = new Scalar(120, 255, 255);
         }
+        this.left = left;
     }
 
     //locations
@@ -41,10 +43,10 @@ public class SpikeDetect extends OpenCvPipeline {
     //location
     private SpikeDetect.Location location;
 
-    //Region of interest coordinates
-    //TODO: change gap coordinates if necessary
-    final static double spikeGapX = 535;
-    final static double contourAreaThreshold = 20000;
+    //constants
+    //TODO: change constants, add independent gap for right if necessary
+    final static double LEFT_SPIKE_GAP_X = 535;
+    final static double CONTOUR_AREA_THRESHOLD = 20000;
 
     @Override
     public Mat processFrame(Mat input) {
@@ -87,18 +89,10 @@ public class SpikeDetect extends OpenCvPipeline {
 
         hierarchy.release();
 
-        //select location region and draw rectangle on it
-        if (contourArea < contourAreaThreshold || propCenter.x < 0) {
-            location = SpikeDetect.Location.RIGHT;
-            //Imgproc.drawContours(input, contours, largestContourIdx, new Scalar(0, 255, 0), 3);
-            //Imgproc.circle(input, propCenter, 5, new Scalar(0,255,0), 3);
-        }
-        else if (propCenter.x >= spikeGapX) {
-            location = SpikeDetect.Location.MID;
-            Imgproc.drawContours(input, contours, largestContourIdx, new Scalar(0, 255, 0), 3);
-            Imgproc.circle(input, propCenter, 5, new Scalar(0,255,0), 3);
-        } else {
-            location = SpikeDetect.Location.LEFT;
+        //select location region
+        location = left ? leftGetLocation() : rightGetLocation();
+        //draw rectangle on region if it is within view
+        if (propCenter.x >= 0 && contourArea >= CONTOUR_AREA_THRESHOLD) {
             Imgproc.drawContours(input, contours, largestContourIdx, new Scalar(0, 255, 0), 3);
             Imgproc.circle(input, propCenter, 5, new Scalar(0,255,0), 3);
         }
@@ -109,6 +103,28 @@ public class SpikeDetect extends OpenCvPipeline {
     //some methods to get constants and vars
     public SpikeDetect.Location getLocation() {
         return location;
+    }
+
+    //use when aligning with left side of tile
+    public SpikeDetect.Location leftGetLocation() {
+        if (contourArea < CONTOUR_AREA_THRESHOLD || propCenter.x < 0) {
+            return SpikeDetect.Location.RIGHT;
+        }
+        else if (propCenter.x >= LEFT_SPIKE_GAP_X) {
+            return SpikeDetect.Location.MID;
+        }
+        return SpikeDetect.Location.LEFT;
+    }
+
+    //use when aligning with right side of tile
+    public SpikeDetect.Location rightGetLocation() {
+        if (contourArea < CONTOUR_AREA_THRESHOLD || propCenter.x < 0) {
+            return SpikeDetect.Location.LEFT;
+        }
+        else if (propCenter.x <= 1280 - LEFT_SPIKE_GAP_X) {
+            return SpikeDetect.Location.MID;
+        }
+        return SpikeDetect.Location.RIGHT;
     }
 
     public double getContourArea() { return contourArea; }

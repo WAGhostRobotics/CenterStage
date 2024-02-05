@@ -22,15 +22,17 @@ public class MotionPlanner {
     private Drivetrain drive;
     private Localizer localizer;
 
+
     //    private PIDController translationalControl = new PIDController(0.022,0.001,0.03);
     public static PIDController translationalControl = new PIDController(0.01, 0.0001, 0);
-    public static PIDController headingControl = new PIDController(0.006, 0.0005, 0);
+    public static PIDController headingControl = new PIDController(0.008, 0.0007, 0);
 
     //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
 //    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
-    public static PIDController translationalControlEndX = new PIDController(0.005,0.0006,0.3);
+    public static PIDController translationalControlEndX = new PIDController(0.005,0.0007,0.3);
     public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
-    public static PIDController headingControlEnd = new PIDController(0.003, 0.005, 0); // hope
+    public static PIDController headingControlEnd = new PIDController(0.00004, 0.00005, 0); // hope
+
 
 
     private int index;
@@ -59,7 +61,7 @@ public class MotionPlanner {
     double currentX;
 
     double radius;
-    public final static double THE_HOLY_CONSTANT = 0.00006; //0.001
+    public final static double THE_HOLY_CONSTANT = 0.0006; //0.001
 
     double ac;
 
@@ -67,11 +69,11 @@ public class MotionPlanner {
     ElapsedTime loopTime;
 
 
-    private final double movementPower = 0.85;
-    public static double kStatic = 0.31; //.19
+    private double movementPower = 0.85;
+    public static double kStatic = 0.32; //.19
     private final double translational_error = 1;
     private final double heading_error = 3;
-    private final double endTrajThreshhold = 20;
+    private final double endTrajThreshhold = 10;
     public static final double tIncrement = 0.05;
 
 
@@ -196,6 +198,7 @@ public class MotionPlanner {
         if(!isFinished()){
 
             if(index >=estimatedStopping){
+
                 if(!end){
                     translationalControlEndX.reset();
                     translationalControlEndY.reset();
@@ -221,6 +224,7 @@ public class MotionPlanner {
                 drive.drive(magnitude, theta, driveTurn, movementPower, voltage);
 
             } else {
+
                 end = false;
 
                 magnitude = 1;

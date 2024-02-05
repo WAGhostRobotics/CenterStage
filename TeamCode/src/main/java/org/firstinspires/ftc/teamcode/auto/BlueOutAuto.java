@@ -9,6 +9,7 @@ public class BlueOutAuto extends AutoParent{
     public void runOpMode() throws InterruptedException {
         super.startPos = StartPos.OUT;
         super.red = false;
+        super.left = false;
         super.runOpMode();
     }
 }

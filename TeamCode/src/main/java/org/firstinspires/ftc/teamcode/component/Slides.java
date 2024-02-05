@@ -22,7 +22,7 @@ public class Slides {
     private PIDController slideController = new PIDController(0.003, 0.0006,0); //0.006
 
     public enum TurnValue {
-        SUPER_RETRACTED(-300),
+        SUPER_RETRACTED(-100),
         RETRACTED(350),
         INTAKE(0),
         PLACE(800), // 880
@@ -127,9 +127,9 @@ public class Slides {
         return slide1.getCurrent(CurrentUnit.AMPS)>stallCurrent;
     }
 
-    public void stopArm(){
+    public void stopSlides(){
         // value added to prevent sliding down
-        slide1.setPower(zeroPwr + slide1.getCurrentPosition() * 0.000008);
-        slide2.setPower(zeroPwr + slide1.getCurrentPosition() * 0.000008);
+        slide1.setPower(Range.clip(zeroPwr + slide1.getCurrentPosition() * 0.00001, -1, 1));
+        slide2.setPower(Range.clip(zeroPwr + slide1.getCurrentPosition() * 0.00001, -1, 1));
     }
 }
