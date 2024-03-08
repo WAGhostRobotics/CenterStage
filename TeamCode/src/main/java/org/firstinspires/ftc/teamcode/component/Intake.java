@@ -13,9 +13,10 @@ public class Intake {
     private final double power = 1;
 
     public enum IntakeHeight {
-        RETRACT(0.5),
+        RETRACT(0.65),
         INTAKE(0.1916),
-        PIXEL1(0.1),
+        AUTO_INTAKE(0.22),
+        PIXEL1(0.33),
         PIXEL2(0.2),
         PIXEL3(0.3),
         PIXEL4(0.4),
@@ -50,8 +51,8 @@ public class Intake {
     }
 
     public void slowOut() {
-        intake.setPower(-0.4);
-        sushi.setPower(-0.5);
+        intake.setPower(-0.3);
+        sushi.setPower(-0.3);
     }
 
     public void stop() {

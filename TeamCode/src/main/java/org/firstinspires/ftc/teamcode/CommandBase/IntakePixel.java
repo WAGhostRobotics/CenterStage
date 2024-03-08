@@ -24,4 +24,20 @@ public class IntakePixel extends SequentialCommand {
                 new SlidesMove(Slides.TurnValue.INTAKE.getTicks())
         );
     }
+
+    public IntakePixel(boolean bottom) {
+        super(
+                new ParallelCommand(
+                        new RunCommand(() -> Gnocchi.mainSail.moveArm(MainSail.ArmPos.MID.getPosition())),
+                        new RunCommand(() -> Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.INTAKE.getPosition())),
+                        new SlidesMove(Slides.TurnValue.RETRACTED.getTicks())
+                ),
+                new ParallelCommand(
+                        new RunCommand(() -> Gnocchi.slides.setTargetPosition(Slides.TurnValue.SUPER_RETRACTED.getTicks())),
+                        new Wait(150),
+                        new RunCommand(() -> Gnocchi.mainSail.moveArm(MainSail.ArmPos.INTAKE.getPosition()))
+                ),
+                new SlidesMove(Slides.TurnValue.INTAKE.getTicks())
+        );
+    }
 }

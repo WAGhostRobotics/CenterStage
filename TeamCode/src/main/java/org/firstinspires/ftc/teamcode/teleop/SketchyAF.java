@@ -127,6 +127,7 @@ public class SketchyAF extends LinearOpMode {
             if (gamepad1.dpad_left && slidesInPos) {
                 intakePixel.stop();
                 Gnocchi.intake.setHeight(Intake.IntakeHeight.INTAKE);
+//                Gnocchi.slides.setTargetPosition(Slides.TurnValue.SUPER_RETRACTED.getTicks());
                 Gnocchi.intake.in();
                 Gnocchi.mainSail.in();
             }

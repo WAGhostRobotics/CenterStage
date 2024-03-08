@@ -7,12 +7,12 @@ public class Launcher {
 
     private Servo launcher;
 
-    private final double closePos = 0.06;
-    private final double openPos = 0.13;
+    private final double closePos = 0.1233;
+    private final double openPos = 0.0609;
 
     public void init(HardwareMap hwMap) {
         launcher = hwMap.get(Servo.class, "launcher");
-        launcher.setDirection(Servo.Direction.REVERSE);
+//        launcher.setDirection(Servo.Direction.REVERSE);
         launcher.setPosition(closePos);
     }
 

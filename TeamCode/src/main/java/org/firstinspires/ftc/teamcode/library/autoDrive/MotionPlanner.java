@@ -29,12 +29,11 @@ public class MotionPlanner {
 
     //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
 //    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
-    public static PIDController translationalControlEndX = new PIDController(0.005,0.0007,0.3);
+    public static PIDController translationalControlEndX = new PIDController(0.0059,0.0008,0.3);
     public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
     public static PIDController headingControlEnd = new PIDController(0.00004, 0.00005, 0); // hope
 
-
-
+    
     private int index;
     private double x;
     private double y;

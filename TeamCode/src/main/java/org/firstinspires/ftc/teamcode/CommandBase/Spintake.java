@@ -9,12 +9,17 @@ import org.firstinspires.ftc.teamcode.library.commandSystem.Command;
 public class Spintake extends Command {
 
     boolean intake;
+    boolean cri;
 
     ElapsedTime timer;
-    private int pixelTime = 600;
+    private int pixelTime = 1000;
 
-    public Spintake(boolean intake) {
+    public Spintake(boolean intake, boolean cri) {
         this.intake = intake;
+        this.cri = cri;
+        if (intake) {
+            pixelTime = 2000;
+        }
     }
 
     @Override
@@ -25,8 +30,11 @@ public class Spintake extends Command {
         }
         if (intake) {
             Gnocchi.intake.in();
-        } else {
+        } else if (cri) {
             Gnocchi.intake.setHeight(Intake.IntakeHeight.INTAKE);
+            Gnocchi.intake.out();
+        } else {
+            Gnocchi.intake.setHeight(Intake.IntakeHeight.AUTO_INTAKE);
             Gnocchi.intake.slowOut();
         }
     }

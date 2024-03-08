@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
 
 @Config
@@ -196,5 +197,10 @@ public class MecanumDrive implements Drivetrain {
         backLeftPower = (magnitude * sin / maxMovement - driveTurn);
         backRightPower = (magnitude * cos / maxMovement + driveTurn);
 
+    }
+
+    public double totalCurrent() {
+        return frontLeft.getCurrent(CurrentUnit.AMPS) + frontRight.getCurrent(CurrentUnit.AMPS) +
+                backLeft.getCurrent(CurrentUnit.AMPS) + backRight.getCurrent(CurrentUnit.AMPS);
     }
 }

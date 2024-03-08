@@ -11,6 +11,10 @@ public class PosOuttakePixel extends SequentialCommand {
 
     public PosOuttakePixel() {
         super(
+//                new ParallelCommand(
+//                        new Spintake(true, false),
+//                        new PixelHolderFunc(false, true)
+//                ),
                 new SlidesMove(Slides.TurnValue.PLACE.getTicks()),
                 new ParallelCommand(
                         new RunCommand(() -> Gnocchi.mainSail.movePixelHolder(MainSail.HolderPos.PLACE.getPosition())),

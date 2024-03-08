@@ -20,7 +20,6 @@ import org.firstinspires.ftc.teamcode.library.autoDrive.math.Bezier;
 import org.firstinspires.ftc.teamcode.library.autoDrive.math.MergedBezier;
 import org.firstinspires.ftc.teamcode.library.autoDrive.math.Point;
 import org.firstinspires.ftc.teamcode.library.commandSystem.ParallelCommand;
-import org.firstinspires.ftc.teamcode.library.commandSystem.RunCommand;
 import org.firstinspires.ftc.teamcode.library.commandSystem.SequentialCommand;
 import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.library.vision.SpikeDetect;
@@ -45,6 +44,7 @@ public class AutoParent extends LinearOpMode {
     Bezier spike;
     Bezier toAprilTags;
     Bezier park;
+    Bezier bruh;
 
 
     @Override
@@ -90,25 +90,28 @@ public class AutoParent extends LinearOpMode {
                                         ),
                                         new Bezier(-90,
                                                 new Point(27, 0),
-                                                new Point(27, -17.2)
+                                                new Point(28.5, -18)  //y was -17.2
                                         )
                                 );
                             } else {
-                                spike = new Bezier(-90,
+                                spike = new Bezier(90,
                                         new Point(0, 0),
-                                        new Point(23.5, 0));
+                                        new Point(27, -12),
+                                        new Point(27, -2));
                             }
                         } else {
                             if (startPos == StartPos.IN) {
                                 spike = new Bezier(
                                         90,
                                         new Point(0, 0),
-                                        new Point(25, 0)
+                                        new Point(25.5, -12),
+                                        new Point(27.5, 0)
                                 );
                             } else {
-                                spike = new Bezier(-90,
+                                spike = new Bezier(15,
                                         new Point(0, 0),
-                                        new Point(33, -29));
+                                        new Point(40, -10),
+                                        new Point(44.5, -1.7));
                             }
                         }
                         aprilTagLocation = red ? Webcam.AprilTagLocation.SIX : Webcam.AprilTagLocation.THREE;
@@ -117,29 +120,24 @@ public class AutoParent extends LinearOpMode {
                     case MID:
                         if (red) {
                             if (startPos == StartPos.IN) {
-//                                spike = new Bezier(170,
-//                                        new Point(0, 0),
-//                                        new Point(21, 5),
-//                                        new Point(40, 5),
-//                                        new Point(21, 7));
                                 spike = new Bezier(0,
                                         new Point(0, 0),
-                                        new Point(48.35, 6)
+                                        new Point(49, 6)
                                 ); //TODO:stab clara stab sanjay
                             } else {
                                 spike = new Bezier(
                                         new Point(0, 0),
-                                        new Point(40, 3));
+                                        new Point(49.5, -0.8));
                             }
                         } else {
                             if (startPos == StartPos.IN) {
                                 spike = new Bezier(0,
                                         new Point(0, 0),
-                                        new Point(48.35, -5));
+                                        new Point(47.7, -5));
                             } else {
                                 spike = new Bezier(0,
                                         new Point(0, 0),
-                                        new Point(40, 3));
+                                        new Point(49, 6));
                             }
                         }
                         aprilTagLocation = red ? Webcam.AprilTagLocation.FIVE : Webcam.AprilTagLocation.TWO;
@@ -151,32 +149,36 @@ public class AutoParent extends LinearOpMode {
                                 spike = new Bezier(
                                         -90,
                                         new Point(0, 0),
-                                        new Point(25, 0)
+                                        new Point(24, 16),
+                                        new Point(25, 2)    //y was 4 before i came along
                                 );
                             } else {
                                 spike = new Bezier(
                                         -90,
                                         new Point(0, 0),
-                                        new Point(27, 0)
+                                        new Point(26, 15),
+                                        new Point(27, -6)
                                 );
                             }
                         } else {
                             if (startPos == StartPos.IN) {
                                 spike = new MergedBezier(
-                                        new Bezier(90,
+                                        new Bezier(70,
                                                 new Point(0, 0),
                                                 new Point(27, 0)
                                         ),
                                         new Bezier(90,
                                                 new Point(27, 0),
-                                                new Point(30, 25)
+                                                new Point(28, 25)
                                         )
                                 );
                             } else {
                                 spike = new Bezier(
                                         -90,
                                         new Point(0, 0),
-                                        new Point(27, -5)
+                                        new Point(20, 4),
+                                        new Point(23, 20),
+                                        new Point(25, 4)
                                 );
                             }
                         }
@@ -188,35 +190,42 @@ public class AutoParent extends LinearOpMode {
                 switch (aprilTagLocation) {
                     case ONE:
                         if (startPos == StartPos.OUT) {
-                            toAprilTags = new Bezier(90,
-                                    spike.getEndPoint(),
-                                    new Point(25, -20),
-                                    new Point(58, 30),
-                                    new Point(50, 58),
-                                    new Point(17.5, 80)
+                            toAprilTags = new MergedBezier(
+                                    new Bezier(160,
+                                            spike.getEndPoint(),
+                                            new Point(30, -11),
+                                            new Point(40, -5),
+                                            new Point(52, 60),
+                                            new Point(22, 70)
+                                    ),
+                                    new Bezier(120,
+                                            new Point(22, 70),
+                                            new Point(0.5, 88.8)
+                                    )
                             );
                         } else {
                             toAprilTags = new Bezier(90,
                                     spike.getEndPoint(),
-                                    new Point(25, 17.2),
-                                    new Point(16, 36)
+                                    new Point(25, 19.7),
+                                    new Point(15, 36.5)
                             );
                         }
                         break;
                     case TWO:
                         if (startPos == StartPos.OUT) {
-                            toAprilTags = new Bezier(90,
+                            toAprilTags = new Bezier(100,
                                     spike.getEndPoint(),
-                                    new Point(45, 30),
-                                    new Point(30, 48),
-                                    new Point(16.7, 79)
+                                    new Point(46.3, 4),
+                                    new Point(65, 28),
+                                    new Point(20, 50),
+                                    new Point(17.5, 88.5)
                             );
                         } else {
-                            toAprilTags = new Bezier(90,
+                            toAprilTags = new Bezier(100,
                                     spike.getEndPoint(),
                                     new Point(42, 24),
-                                    new Point(22, 26),
-                                    new Point(19.5, 35.5)
+                                    new Point(19, 27),
+                                    new Point(19.45, 34.1)
                             );
                         }
                         break;
@@ -224,114 +233,141 @@ public class AutoParent extends LinearOpMode {
                         if (startPos == StartPos.OUT) {
                             toAprilTags = new Bezier(90,
                                     spike.getEndPoint(),
-                                    new Point(40, 30),
-                                    new Point(30, 48),
-                                    new Point(23, 79)
+                                    new Point(50, 30),
+                                    new Point(55, 38),
+                                    new Point(28, 43),
+                                    new Point(24.8, 91.5)
                             );
                         } else {
                             toAprilTags = new Bezier(90,
                                     spike.getEndPoint(),
-                                    new Point(23, 2),
-                                    new Point(42, 22),
-                                    new Point(29, 38)
+                                    new Point(27, -0.5),
+                                    new Point(28, 2),
+                                    new Point(35, 22),
+                                    new Point(29.5, 38.8)
                             );
                         }
                         break;
                     case FOUR:
                         if (startPos == StartPos.OUT) {
-                            toAprilTags = new Bezier(-90,
-                                    spike.getEndPoint(),
-                                    new Point(60, 12),
-                                    new Point(45, -50),
-                                    new Point(31.5, -87.5)
+                            toAprilTags = new MergedBezier(
+                                    new Bezier(-30,
+                                            spike.getEndPoint(),
+                                            new Point(42, -1),
+                                            new Point(56, -10),
+                                            new Point(46, -60),
+                                            new Point(32, -65)
+                                    ),
+                                    new Bezier(-70,
+                                            new Point(32, -65),
+                                            new Point(36.11, -88.3)
+                                    )
                             );
                         } else {
                             toAprilTags = new Bezier(-90,
                                     spike.getEndPoint(),
-                                    new Point(23, 6),
+                                    new Point(20, 3.7),
                                     new Point(42, -22),
-                                    new Point(32, -34)
+                                    new Point(33, -34)
                             );
                         }
                         break;
                     case FIVE:
                         if (startPos == StartPos.OUT) {
-                            toAprilTags = new Bezier(-90,
-                                    spike.getEndPoint(),
-                                    new Point(75, -35),
-                                    new Point(20, -39),
-                                    new Point(33.5, -86)
+                            toAprilTags = new MergedBezier(
+                                    new Bezier(-30,
+                                            spike.getEndPoint(),
+                                            new Point(46.7, -1),
+                                            new Point(56, -10),
+                                            new Point(46, -60),
+                                            new Point(32, -65)
+                                    ),
+                                    new Bezier(-65,
+                                            new Point(32, -65),
+                                            new Point(29.9, -90)
+                                    )
                             );
                         } else {
                             toAprilTags = new Bezier(-90,
                                     spike.getEndPoint(),
-//                                    new Point(20, -22),
-//                                    new Point(60, -25),
-//                                    new Point(28.5, -31)
-                                    new Point(60, -20),
-                                    new Point(29.4, -37) //TODO: toast cclara
+                                    new Point(32, -18),
+                                    new Point(45, -18),
+                                    new Point(30.4, -35.9) //TODO: toast cclara
                             );
                         }
                         break;
                     case SIX:
                         if (startPos == StartPos.OUT) {
-                            toAprilTags = new Bezier(-90,
-                                    spike.getEndPoint(),
-                                    new Point(20, 1),
-                                    new Point(50, 5),
-                                    new Point(70, -74),
-                                    new Point(25, -89)
+                            toAprilTags = new MergedBezier(
+                                    new Bezier(-30,
+                                            spike.getEndPoint(),
+                                        new Point(37, 22.5),
+                                        new Point(56, 5),
+                                        new Point(46, -60),
+                                        new Point(32, -65)
+                                    ),
+                                    new Bezier(-65,
+                                    new Point(32, -65),
+                                    new Point(34, -89.2)
+                                )
                             );
                         } else {
                             toAprilTags = new Bezier(-90,
                                     spike.getEndPoint(),
-                                    new Point(50, -25),
-                                    new Point(20.5, -32)
+                                    new Point(20.5, -17),
+                                    new Point(20.5, -34.3)
                             );
                         }
                         break;
                 }
+
+                bruh = new Bezier(mult * 90, toAprilTags.getEndPoint());
+
                 if (startPos == StartPos.IN && !red) {
                     park = new Bezier(0, toAprilTags.getEndPoint(), new Point(1, 35.5));
                 } else if (startPos == StartPos.IN) {
-                    park = new Bezier(0, toAprilTags.getEndPoint(), new Point(0, 0));
+                    park = new Bezier(0, toAprilTags.getEndPoint(), new Point(7, -37.5));
                 } else {
                     park = new Bezier(mult * 90, toAprilTags.getEndPoint());
 
                 }
+
+//                park = new Bezier(
+//                        new Point(0, 0),
+//                        new Point(mult * 95, 0)
+//                );
             }
         }
 
+        SequentialCommand scheduler = new SequentialCommand(
+                // spike
+                new FollowTrajectory(motionPlanner, spike),
+                new Wait(300),
+                new Spintake(false, false),
+                new Wait(400),
 
-            SequentialCommand scheduler = new SequentialCommand(
-                    // spike
-                    new FollowTrajectory(motionPlanner, spike),
-                    new Wait(100),
-                    new Spintake(false),
-                    new Wait(400),
-
-                    // april tag
-                    new ParallelCommand(
-                            new SequentialCommand(
-                                    new Wait(700),
-                                    new ParallelCommand(
-                                            new PixelHolderFunc(false, true),
-                                            new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition())
-                                    )
-                            ),
-                            new SequentialCommand(
-                                    new Wait(800),
-                                    new FollowTrajectory(motionPlanner, toAprilTags)
-                            )
-                    ),
-                    new Wait(700),
-                    new PosOuttakePixel(),
-                    new Wait(500),
-                    new PixelHolderFunc(false, false),
-                    new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition()),
-                    new SlidesMove(Slides.TurnValue.INTAKE.getTicks()),
-                    new FollowTrajectory(motionPlanner, park)
-            );
+                // april tag
+                new ParallelCommand(
+                        new SequentialCommand(
+                                new Wait(700),
+                                new ParallelCommand(
+                                        new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition())
+                                )
+                        ),
+                        new SequentialCommand(
+                                new Wait(800),
+                                new FollowTrajectory(motionPlanner, toAprilTags)
+                        )
+                ),
+                new FollowTrajectory(motionPlanner, bruh),
+                new Wait(200),
+                new PosOuttakePixel(),
+                new Wait(200),
+                new PixelHolderFunc(false, false),
+                new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition()),
+                new SlidesMove(Slides.TurnValue.INTAKE.getTicks()),
+                new FollowTrajectory(motionPlanner, park)
+        );
 
             scheduler.init();
             motionPlanner.startTrajectory(spike);
@@ -341,8 +377,8 @@ public class AutoParent extends LinearOpMode {
                 Gnocchi.slides.update();
                 scheduler.update();
 
-                telemetry.addData("index", scheduler.getIndex());
-                telemetry.addData("finished", scheduler.isFinished());
+                telemetry.addData("Current", Gnocchi.slides.getCurrent1() +
+                        Gnocchi.slides.getCurrent2() + drive.totalCurrent());
                 telemetry.addData("", motionPlanner.getTelemetry());
                 telemetry.update();
             }

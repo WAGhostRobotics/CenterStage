@@ -19,7 +19,7 @@ public class Slides {
 
     private double stallCurrent = 5.9;
 
-    private PIDController slideController = new PIDController(0.003, 0.0006,0); //0.006
+    private PIDController slideController = new PIDController(0.003, 0.0007,0); //0.006
 
     public enum TurnValue {
         SUPER_RETRACTED(-100),
