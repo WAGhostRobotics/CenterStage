@@ -48,6 +48,26 @@ public class Gnocchi {
         launcher.init(hwMap);
     }
 
+    public static void init(HardwareMap hwMap) {
+        hardwareMap = hwMap;
+
+        frontLeft = hwMap.get(DcMotorEx.class, "lf");
+        frontRight = hwMap.get(DcMotorEx.class, "rf");
+        backLeft = hwMap.get(DcMotorEx.class, "lb");
+        backRight = hwMap.get(DcMotorEx.class, "rb");
+
+        mainSail = new MainSail();
+        mainSail.init(hwMap);
+
+        intake = new Intake();
+        intake.init(hwMap);
+
+        slides = new Slides();
+        slides.init(hwMap, false);
+        launcher = new Launcher();
+        launcher.init(hwMap);
+    }
+
     /**
      * Sleeps for the given amount of milliseconds, or until the thread is interrupted. This is
      * simple shorthand for the operating-system-provided {@link Thread#sleep(long) sleep()} method.

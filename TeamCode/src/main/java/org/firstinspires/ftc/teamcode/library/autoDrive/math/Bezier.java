@@ -13,15 +13,20 @@ public class Bezier {
     double pow3;
     double pow4;
 
-    double heading;
+    public double heading;
 
     private Point[] curvePoints;
     private Point[] curveDerivatives;
     private double[] curveHeadings;
+    private final double defaultIncrement = MotionPlanner.tIncrement;
+    public int estimatedStopping;
+    private final double endTrajThreshold = 10;
+    private double approxLength;
+    static double tIncrement;
 
-    static double tIncrement = MotionPlanner.tIncrement;
-
-
+    public void calculateIncrement() {
+        //return approxLength;
+    }
     public Bezier(double heading, Point... waypoints) {
         this.waypoints = waypoints;
         this.heading = normalizeDegrees(heading);
@@ -41,7 +46,7 @@ public class Bezier {
 
     public void generateCurve(){
 
-        int len = (int)(1.0/tIncrement) + 1;
+        int len = (int)(1.0/defaultIncrement) + 1;
 
         curvePoints = new Point[len];
         curveDerivatives = new Point[len];
@@ -54,8 +59,10 @@ public class Bezier {
             curveDerivatives[i] = getDerivative(currentT);
             curveHeadings[i] = getHeading(currentT);
 
-            currentT += tIncrement;
+            currentT += defaultIncrement;
         }
+        double length = approximateLength();
+        estimatedStopping = (int)(((length - endTrajThreshold)/length)/defaultIncrement);
     }
 
     public Point[] getCurvePoints(){return curvePoints;}
@@ -65,8 +72,11 @@ public class Bezier {
 
 
     public double getHeading(double t){
-        return heading;
+//        if (t>= 1)
+//            return heading;
+        return Math.toDegrees(Math.atan2(getDerivative(t).getY(), getDerivative(t).getX()));
     }
+
 
     public Point getPoint(double t){
 
@@ -112,42 +122,42 @@ public class Bezier {
 
     }
 
-    public Point getDerivative2(double t){
-
-        double x = 0;
-
-        double y = 0;
-
-        int n = waypoints.length-1;
-
-        for (int i = 0; i <= n; i++) {
-
-            double b = choose(n, i);
-
-            if(n-i==0){
-                pow = Math.pow(t, i - 1);
-                x += b * i * pow * waypoints[i].getX();
-                y += b * i * pow * waypoints[i].getY();
-            }else if(i==0){
-                pow = Math.pow(1 - t, n - i - 1);
-                x += -1 * b * (n-i) * pow * waypoints[i].getX();
-                y += -1 * b * (n-i) * pow * waypoints[i].getY();
-            }else{
-                pow = Math.pow(1-t, n-i-1);
-                pow2 = Math.pow(t, i);
-                pow3 = Math.pow(1-t, n-i);
-                pow4 = Math.pow(t, i-1);
-
-                x += -1 * b * (n-i) * pow * pow2 * waypoints[i].getX() + b * pow3 * i * pow4 * waypoints[i].getX();
-                y += -1 * b * (n-i) * pow * pow2 * waypoints[i].getY() + b * pow3 * i * pow4 * waypoints[i].getY();
-            }
-
-
-        }
-
-        return new Point(x, y);
-
-    }
+//    public Point getDerivative2(double t){
+//
+//        double x = 0;
+//
+//        double y = 0;
+//
+//        int n = waypoints.length-1;
+//
+//        for (int i = 0; i <= n; i++) {
+//
+//            double b = choose(n, i);
+//
+//            if(n-i==0){
+//                pow = Math.pow(t, i - 1);
+//                x += b * i * pow * waypoints[i].getX();
+//                y += b * i * pow * waypoints[i].getY();
+//            }else if(i==0){
+//                pow = Math.pow(1 - t, n - i - 1);
+//                x += -1 * b * (n-i) * pow * waypoints[i].getX();
+//                y += -1 * b * (n-i) * pow * waypoints[i].getY();
+//            }else{
+//                pow = Math.pow(1-t, n-i-1);
+//                pow2 = Math.pow(t, i);
+//                pow3 = Math.pow(1-t, n-i);
+//                pow4 = Math.pow(t, i-1);
+//
+//                x += -1 * b * (n-i) * pow * pow2 * waypoints[i].getX() + b * pow3 * i * pow4 * waypoints[i].getX();
+//                y += -1 * b * (n-i) * pow * pow2 * waypoints[i].getY() + b * pow3 * i * pow4 * waypoints[i].getY();
+//            }
+//
+//
+//        }
+//
+//        return new Point(x, y);
+//
+//    }
 
 
     public int choose(int n, int k) {

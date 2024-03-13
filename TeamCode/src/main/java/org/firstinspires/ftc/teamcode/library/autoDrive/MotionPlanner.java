@@ -26,12 +26,14 @@ public class MotionPlanner {
     //    private PIDController translationalControl = new PIDController(0.022,0.001,0.03);
     public static PIDController translationalControl = new PIDController(0.01, 0.0001, 0);
     public static PIDController headingControl = new PIDController(0.008, 0.0007, 0);
+    //                                                                 0.008
 
     //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
 //    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
-    public static PIDController translationalControlEndX = new PIDController(0.0059,0.0008,0.3);
+    public static PIDController translationalControlEndX = new PIDController(0.003,0.0008,0.0);
+//    public static PIDController translationalControlEndX = new PIDController(0.01,0.001,0);
     public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
-    public static PIDController headingControlEnd = new PIDController(0.00004, 0.00005, 0); // hope
+    public static PIDController headingControlEnd = new PIDController(0.0001, 0.00005, 0); // hope
 
     
     private int index;
@@ -69,11 +71,15 @@ public class MotionPlanner {
 
 
     private double movementPower = 0.85;
+    private double endMovementPower = 0.7;
     public static double kStatic = 0.32; //.19
     private final double translational_error = 1;
     private final double heading_error = 3;
     private final double endTrajThreshhold = 10;
-    public static final double tIncrement = 0.05;
+    public static  double tIncrement = 0.05;
+
+    //public static final double defaultIncrement = 0.05;
+    // Default increment to get approximate length
 
 
     boolean end = false;
@@ -143,6 +149,9 @@ public class MotionPlanner {
                 "\n Theta: " + theta +
                 "\n Magnitude: " + magnitude +
                 "\n Driveturn: " + driveTurn +
+                "\n Targetheading: " + targetHeading +
+                "\n Derivative: " + derivative.getX() + ", " + derivative.getY() + " " +
+                "\n Heading Error: " + (targetHeading-currentHeading) +
 //                "\n Phase: " + end +
 //                "\n Stop " + (distanceLeft < estimatedStopping) +
 //                "\n Distance left: " + distanceLeft +
@@ -151,10 +160,11 @@ public class MotionPlanner {
 //                "\n Perpendicular error: " + (perpendicularError) +
 //                "\n Heading: " + (heading - currentHeading) +
                 "\n Estimated Stopping " + estimatedStopping +
+                "\n End " + end +
 //                "\n " + drive.getTelemetry() +
                 "\n Finished " + isFinished()+
                 "\n Loop Rate " + numLoops/loopTime.seconds() +
-                "\n Heading: " + localizer.getTelemetry() +
+                "\n Heading: " + currentHeading +
                 "\n X: " + localizer.getX() +
                 "\n Y: " + localizer.getY();
     }
@@ -192,7 +202,9 @@ public class MotionPlanner {
         }
 
         target = spline.getCurvePoints()[index];
-        targetHeading = spline.getCurveHeadings()[index];
+//        targetHeading = (!end)? spline.getCurveHeadings()[index] : spline.getHeading(1);
+        targetHeading = (!end) ? spline.getCurveHeadings()[index] : spline.heading;
+        // This line might be a temporary fix. Change getHeading function in bezier.
         derivative = spline.getCurveDerivatives()[index];
         if(!isFinished()){
 
@@ -220,7 +232,7 @@ public class MotionPlanner {
 
                 driveTurn = (!reachedHeadingTarget()) ? (driveTurn + Math.signum(driveTurn) * kStatic): 0;
 
-                drive.drive(magnitude, theta, driveTurn, movementPower, voltage);
+                drive.driveMax(magnitude, theta, driveTurn, endMovementPower, voltage);
 
             } else {
 

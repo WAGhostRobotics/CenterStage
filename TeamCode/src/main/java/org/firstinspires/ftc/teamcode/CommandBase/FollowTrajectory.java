@@ -20,7 +20,7 @@ public class FollowTrajectory extends Command {
 
     @Override
     public void update() {
-
+        mp.update();
     }
 
     @Override
