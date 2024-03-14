@@ -71,7 +71,7 @@ public class MotionPlanner {
 
 
     private double movementPower = 0.85;
-    private double endMovementPower = 0.7;
+    private double endMovementPower = 0.45;
     public static double kStatic = 0.32; //.19
     private final double translational_error = 1;
     private final double heading_error = 3;
@@ -233,6 +233,7 @@ public class MotionPlanner {
                 driveTurn = (!reachedHeadingTarget()) ? (driveTurn + Math.signum(driveTurn) * kStatic): 0;
 
                 drive.driveMax(magnitude, theta, driveTurn, endMovementPower, voltage);
+//                drive.drive(magnitude, theta, driveTurn, movementPower, voltage);
 
             } else {
 

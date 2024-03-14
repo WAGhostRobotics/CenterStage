@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.auto;
 
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeDegrees;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -26,7 +28,7 @@ public class StraightLineAuto extends LinearOpMode {
         MecanumDrive drive = new MecanumDrive(hardwareMap);
         MotionPlanner motionPlanner = new MotionPlanner(drive, localizer, hardwareMap);
         straightTest = new Bezier(
-                0,
+                -45,
                 new Point(0, 0),
                 new Point(0, 50),
                 new Point(30, 30)
@@ -43,6 +45,7 @@ public class StraightLineAuto extends LinearOpMode {
             //motionPlanner.update();
             scheduler.update();
             telemetry.addData("", motionPlanner.getTelemetry());
+            telemetry.addData("Heading: ", normalizeDegrees(localizer.getHeading(Localizer.Angle.DEGREES)));
             telemetry.update();
         }
     }
