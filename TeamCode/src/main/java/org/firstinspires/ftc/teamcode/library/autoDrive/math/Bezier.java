@@ -14,6 +14,7 @@ public class Bezier {
     double pow4;
 
     public double heading;
+    public int pointCount;
 
     private Point[] curvePoints;
     private Point[] curveDerivatives;
@@ -61,6 +62,7 @@ public class Bezier {
 
             currentT += defaultIncrement;
         }
+        pointCount = len;
         double length = approximateLength();
         estimatedStopping = (int)(((length - endTrajThreshold)/length)/defaultIncrement);
     }

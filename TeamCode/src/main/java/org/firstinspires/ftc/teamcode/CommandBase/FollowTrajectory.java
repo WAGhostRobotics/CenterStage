@@ -19,9 +19,7 @@ public class FollowTrajectory extends Command {
     }
 
     @Override
-    public void update() {
-        mp.update();
-    }
+    public void update() {}
 
     @Override
     public boolean isFinished() {

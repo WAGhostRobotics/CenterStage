@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.CommandBase.FollowTrajectory;
-import org.firstinspires.ftc.teamcode.CommandBase.IntakePixel;
 import org.firstinspires.ftc.teamcode.core.Gnocchi;
 import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
 import org.firstinspires.ftc.teamcode.library.autoDrive.MotionPlanner;
@@ -18,7 +17,9 @@ import org.firstinspires.ftc.teamcode.library.autoDrive.math.Point;
 
 @Autonomous
 public class StraightLineAuto extends LinearOpMode {
+    Bezier curvyTest;
     Bezier straightTest;
+    Bezier strafeTest;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -27,11 +28,21 @@ public class StraightLineAuto extends LinearOpMode {
         Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
         MecanumDrive drive = new MecanumDrive(hardwareMap);
         MotionPlanner motionPlanner = new MotionPlanner(drive, localizer, hardwareMap);
-        straightTest = new Bezier(
-                -45,
+        curvyTest = new Bezier(
+                -90,
                 new Point(0, 0),
                 new Point(0, 50),
                 new Point(30, 30)
+        );
+        straightTest = new Bezier(
+                90,
+                new Point(0, 0),
+                new Point(50, 0)
+        );
+        strafeTest = new Bezier(
+                0,
+                new Point(0, 0),
+                new Point(0, 50)
         );
 
         SequentialCommand scheduler = new SequentialCommand(
@@ -44,6 +55,7 @@ public class StraightLineAuto extends LinearOpMode {
         while(opModeIsActive() && !isStopRequested()) {
             //motionPlanner.update();
             scheduler.update();
+            motionPlanner.update();
             telemetry.addData("", motionPlanner.getTelemetry());
             telemetry.addData("Heading: ", normalizeDegrees(localizer.getHeading(Localizer.Angle.DEGREES)));
             telemetry.update();

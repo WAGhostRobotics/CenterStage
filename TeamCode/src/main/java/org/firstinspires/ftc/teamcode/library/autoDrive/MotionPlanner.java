@@ -70,8 +70,10 @@ public class MotionPlanner {
     ElapsedTime loopTime;
 
 
-    private double movementPower = 0.85;
-    private double endMovementPower = 0.45;
+    private double movementPower = 0.8;
+    private double endMovementPower = 0.48;
+    private double turnPowerEnd = 0.3;
+    //28
     public static double kStatic = 0.32; //.19
     private final double translational_error = 1;
     private final double heading_error = 3;
@@ -83,6 +85,7 @@ public class MotionPlanner {
 
 
     boolean end = false;
+    boolean reachedTranslational = false;
     boolean setVelocity = false;
 
     private ElapsedTime ACtimer;
@@ -162,6 +165,7 @@ public class MotionPlanner {
                 "\n Estimated Stopping " + estimatedStopping +
                 "\n End " + end +
 //                "\n " + drive.getTelemetry() +
+                "\n Reached Translational: " + reachedTranslationalTarget() +
                 "\n Finished " + isFinished()+
                 "\n Loop Rate " + numLoops/loopTime.seconds() +
                 "\n Heading: " + currentHeading +
@@ -200,13 +204,12 @@ public class MotionPlanner {
                     distance(spline.getCurvePoints()[index], new Point(x, y))) {
             index++;
         }
-
         target = spline.getCurvePoints()[index];
 //        targetHeading = (!end)? spline.getCurveHeadings()[index] : spline.getHeading(1);
-        targetHeading = (!end) ? spline.getCurveHeadings()[index] : spline.heading;
+        targetHeading = spline.getCurveHeadings()[index];
         // This line might be a temporary fix. Change getHeading function in bezier.
         derivative = spline.getCurveDerivatives()[index];
-        if(!isFinished()){
+        if(!reachedTranslationalTarget()){
 
             if(index >=estimatedStopping){
 
@@ -228,10 +231,11 @@ public class MotionPlanner {
 
                 magnitude = Math.hypot(x_rotated, y_rotated);
                 theta = Math.toDegrees(Math.atan2(y_rotated, x_rotated));
+                targetHeading = (!reachedTranslational) ? spline.getCurveHeadings()[spline.pointCount-1] : spline.heading;
                 driveTurn = headingControlEnd.calculate(0, getHeadingError());
 
                 driveTurn = (!reachedHeadingTarget()) ? (driveTurn + Math.signum(driveTurn) * kStatic): 0;
-
+                double movementPowerFinal = (!reachedTranslational) ? endMovementPower : turnPowerEnd;
                 drive.driveMax(magnitude, theta, driveTurn, endMovementPower, voltage);
 //                drive.drive(magnitude, theta, driveTurn, movementPower, voltage);
 
@@ -300,6 +304,8 @@ public class MotionPlanner {
             }
 
         }else{
+            reachedTranslational = true;
+            targetHeading = spline.heading;
             if(reachedXTarget()){
                 translationalControlEndX.reset();
             }
@@ -311,8 +317,12 @@ public class MotionPlanner {
             if(reachedHeadingTarget()){
                 headingControlEnd.reset();
             }
-
-            drive.drive(0, 0, 0, 0);
+            else {
+                driveTurn = headingControlEnd.calculate(0, getHeadingError());
+                drive.driveMax(0, 0, driveTurn, turnPowerEnd, voltage);
+            }
+            if (isFinished())
+                drive.drive(0, 0, 0, 0);
         }
 
         numLoops++;
@@ -366,6 +376,7 @@ public class MotionPlanner {
 
     private boolean reachedHeadingTarget(){
         return (Math.abs(targetHeading - currentHeading)<= heading_error);
+//        return (Math.abs(driveTurn)<=0.15);
     }
 
     private double distance(Point p1, Point p2){
