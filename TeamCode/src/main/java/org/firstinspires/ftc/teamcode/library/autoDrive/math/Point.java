@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.library.autoDrive.math;
 
 public class Point {
-
     double x;
     double y;
 
@@ -9,6 +8,8 @@ public class Point {
         this.x = x;
         this.y = y;
     }
+
+    public Point() {}
 
     public double getX(){return x;}
     public double getY(){return y;}

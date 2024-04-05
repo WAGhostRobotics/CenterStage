@@ -4,6 +4,9 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.norm
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -52,7 +55,7 @@ public class WonkyDrive {
 
     public Localizer localizer;
     public Drivetrain drive;
-
+    public boolean driverOriented;
 
     // centripetal accel, creates perpendicular to path, convert force to power
     public static double theHolyConstant = 0; //0.01
@@ -70,10 +73,11 @@ public class WonkyDrive {
 
     public PIDController headingController = new PIDController(p, i, d);
 
-    public WonkyDrive(LinearOpMode opMode, HardwareMap hardwareMap, Localizer localizer, Drivetrain drive){
+    public WonkyDrive(LinearOpMode opMode, HardwareMap hardwareMap, Localizer localizer, Drivetrain drive, boolean driverOriented){
 
         this.localizer = localizer;
         this.drive = drive;
+        this.driverOriented = driverOriented;
 
         y1 = 0;
         y2 = 0;
@@ -92,8 +96,7 @@ public class WonkyDrive {
 
 
     public void drive(Gamepad gamepad2, double movementPower){
-
-        updateValues();
+//        this.driverOriented = driverOriented;
 
         double power;
 
@@ -114,7 +117,7 @@ public class WonkyDrive {
         currentHeading = getCurrentHeading();
 
         gamepadMagnitude = (1-kStatic) * (Range.clip(Math.hypot(driveX, driveY), 0, 1) - 1) + 1;
-        theta = gamepadTheta - currentHeading;
+        theta = (driverOriented) ? (gamepadTheta-currentHeading) : (gamepadTheta);
         if(!Double.isNaN(y1)&&!Double.isNaN(y2)&& gamepadMagnitude != 0){
             radius = Math.pow((1+Math.pow(y1,2)), 1.5)/y2;
             ac = Math.pow(velocity, 2)/radius;

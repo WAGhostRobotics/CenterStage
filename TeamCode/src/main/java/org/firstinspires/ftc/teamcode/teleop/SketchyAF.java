@@ -18,8 +18,11 @@ import org.firstinspires.ftc.teamcode.component.Intake;
 import org.firstinspires.ftc.teamcode.component.MainSail;
 import org.firstinspires.ftc.teamcode.component.Slides;
 import org.firstinspires.ftc.teamcode.core.Gnocchi;
+import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
+import org.firstinspires.ftc.teamcode.library.autoDrive.TwoWheelLocalizer;
 import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.MecanumDrive;
+import org.firstinspires.ftc.teamcode.library.teleopDrive.WonkyDrive;
 
 
 @TeleOp(name = "sketchyaf")
@@ -49,15 +52,17 @@ public class SketchyAF extends LinearOpMode {
         ToggleButtonReader stick = new ToggleButtonReader(
                 driverOp2, GamepadKeys.Button.RIGHT_STICK_BUTTON
         );
+        ToggleButtonReader driveControllerY = new ToggleButtonReader(
+                driverOp2, GamepadKeys.Button.Y
+        );
 
         Gnocchi.init(hardwareMap, false, false);
 
         IntakePixel intakePixel = new IntakePixel();
+        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
 
         Drivetrain drive = new MecanumDrive(hardwareMap);
-
-//        Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
-//        WonkyDrive wonk = new WonkyDrive(this, hardwareMap, localizer, drive);
+        WonkyDrive wonk = new WonkyDrive(this, hardwareMap, localizer, drive, false);
 
         waitForStart();
 
@@ -82,15 +87,17 @@ public class SketchyAF extends LinearOpMode {
             double driveTurn = Math.pow(-gamepad2.right_stick_x, 3);
             double driveY = Math.pow(-gamepad2.left_stick_x, 3);
             double driveX = Math.pow(-gamepad2.left_stick_y, 3);
-            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, movementPwr);
+//            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, movementPwr);
 
             if (stick.wasJustReleased() && movementPwr == 1) {
                 movementPwr = 0.5;
             } else if (stick.wasJustReleased() && movementPwr == 0.5){
                 movementPwr = 1;
             }
-
-//            wonk.drive(gamepad2, 1);
+            if (driveControllerY.wasJustReleased()) {
+                localizer.initImu();
+            }
+            wonk.drive(gamepad2, movementPwr);
 
 //            //re-initializes imu to correct heading if teleop starts at the wrong heading
 //            if (gamepad2.left_stick_button){

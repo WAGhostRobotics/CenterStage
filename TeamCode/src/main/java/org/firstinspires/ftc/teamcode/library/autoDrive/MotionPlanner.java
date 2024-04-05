@@ -72,7 +72,7 @@ public class MotionPlanner {
 
     private double movementPower = 0.8;
     private double endMovementPower = 0.48;
-    private double turnPowerEnd = 0.3;
+    private double turnPowerEnd = 0.35;
     //28
     public static double kStatic = 0.32; //.19
     private final double translational_error = 1;
@@ -154,7 +154,9 @@ public class MotionPlanner {
                 "\n Driveturn: " + driveTurn +
                 "\n Targetheading: " + targetHeading +
                 "\n Derivative: " + derivative.getX() + ", " + derivative.getY() + " " +
+                "\n Derivative: " + Math.hypot(derivative.getX(), derivative.getY()) + " " +
                 "\n Heading Error: " + (targetHeading-currentHeading) +
+                "\n Approx Length: " + (spline.approximateLength()) +
 //                "\n Phase: " + end +
 //                "\n Stop " + (distanceLeft < estimatedStopping) +
 //                "\n Distance left: " + distanceLeft +

@@ -64,5 +64,4 @@ public class TwoWheelLocalizer extends Localizer {
     public double getHeading(){
         return Math.toRadians(getHeadingImu());
     }
-
 }

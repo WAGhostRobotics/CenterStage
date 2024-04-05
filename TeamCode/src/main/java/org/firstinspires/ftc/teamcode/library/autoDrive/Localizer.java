@@ -27,6 +27,8 @@ public class Localizer {
 
     private double x;
     private double y;
+    private double xPrev;
+    private double yPrev;
 
 
     private double lastHeading;
@@ -40,15 +42,29 @@ public class Localizer {
     private double r0;
     private double r1;
 
-
     private double relX;
     private double relY;
 
     public static double X_MULTIPLIER = 1; // Multiplier in the X direction
     public static double Y_MULTIPLIER = 1; // Multiplier in the Y direction
+    private ElapsedTime time;
+    private double elapsedTime;
+    private double velocity;
+    private double avgVel;
+    private double lastVelocity;
+    private double acceleration;
 
+    // Making arrays of velocities and acc to get a non-noisy average of last 10 values
+    public double[] velocities;
+    public double[] accelerations;
+
+    public final int length = 10;
+    private int index = 0;
 
     public Localizer(LinearOpMode opMode, HardwareMap hardwareMap, boolean twoWheel){
+        velocities = new double[length];
+        accelerations = new double[length];
+        time = new ElapsedTime();
         imu = new OldImu(hardwareMap);
         imu.initImuThread(opMode);
 
@@ -59,6 +75,8 @@ public class Localizer {
 
         imu = new OldImu(hardwareMap);
         imu.initImuThread(opMode);
+        velocities = new double[length];
+        accelerations = new double[length];
 
         rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rr"));
         leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lf"));
@@ -94,7 +112,8 @@ public class Localizer {
     }
 
     public void update(){
-
+        elapsedTime = time.seconds();
+        time.reset();
         calculateRawValues();
 
         if(heading -lastHeading == 0){
@@ -111,6 +130,43 @@ public class Localizer {
         x += relX * Math.cos(heading) - relY * Math.sin(heading);
         y += relY * Math.cos(heading) + relX * Math.sin(heading);
 
+        velocity = Math.sqrt(
+                Math.pow((x-xPrev)/elapsedTime, 2) + Math.pow((y-yPrev)/elapsedTime, 2)
+        );
+
+        // Average velocity - running average of 10 values
+        if (index<length) {
+            velocities[index] = getRawVelocity();
+            index++;
+        }
+        else {
+            index = 0;
+        }
+        double sum = 0;
+        for (int i =0; i<length;i++) {
+            sum+=velocities[i];
+        }
+        lastVelocity = avgVel;
+        avgVel = sum/length;
+
+        // Getting average acceleration - running sum of 10
+        double rawAcc = (avgVel-lastVelocity)/elapsedTime;
+        if (index<length) {
+            accelerations[index] = rawAcc;
+            index++;
+        }
+        else {
+            index = 0;
+        }
+        // Re-using the previous sum variable
+        sum = 0;
+        for (int i =0; i<length;i++) {
+            sum+=accelerations[i];
+        }
+        acceleration = sum/length;
+
+        xPrev = x;
+        yPrev = y;
         lastX = rawX;
         lastY = rawY;
 
@@ -195,4 +251,15 @@ public class Localizer {
         return "First heading: " + imu.getCurrentHeading();
     }
 
+    public double getRawVelocity() {
+        return velocity;
+    }
+
+    public double getAvgVelocity() {
+        return avgVel;
+    }
+
+    public double getAcc() {
+        return acceleration;
+    }
 }

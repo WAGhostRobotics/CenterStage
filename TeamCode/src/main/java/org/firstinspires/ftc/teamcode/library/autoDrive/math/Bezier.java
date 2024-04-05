@@ -186,6 +186,16 @@ public class Bezier {
         return distance;
     }
 
+    public double segmentLength(int index) {
+        if (index > pointCount)
+            return 0;
+        double t = ((double)index)/((double)pointCount);
+        Point p1 = getPoint(t);
+        Point p2 = getPoint(t+defaultIncrement);
+        return Math.hypot(p2.getX()-p1.getX(), p2.getY()-p1.getY());
+
+    }
+
     public Point getEndPoint() {
         return waypoints[waypoints.length-1];
     }

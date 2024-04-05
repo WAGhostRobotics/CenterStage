@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
 
 import java.util.function.DoubleSupplier;
 
@@ -43,7 +44,7 @@ public class OldImu {
                 }
                 while(opMode.opModeIsActive() && !opMode.isStopRequested()){
                     heading = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-                    angularVelocity = imu.getAngularVelocity().zRotationRate;
+                    angularVelocity = imu.getAngularVelocity().xRotationRate;
                 }
 
             }

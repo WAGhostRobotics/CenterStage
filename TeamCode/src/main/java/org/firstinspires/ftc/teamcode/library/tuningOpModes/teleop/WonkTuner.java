@@ -36,7 +36,7 @@ public class WonkTuner extends LinearOpMode {
 
         waitForStart();
 
-        WonkyDrive wonk = new WonkyDrive(this, hardwareMap, localizer, drive);
+        WonkyDrive wonk = new WonkyDrive(this, hardwareMap, localizer, drive, true);
 
         while (opModeIsActive()) {
 
