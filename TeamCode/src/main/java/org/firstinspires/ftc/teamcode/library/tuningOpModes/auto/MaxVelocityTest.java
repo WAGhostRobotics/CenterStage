@@ -38,6 +38,10 @@ public class MaxVelocityTest extends LinearOpMode {
     double prevAngV;
     double angAcc;
     double maxDecc = 0;
+    boolean braking;
+    double brakeHeading = 0;
+    double magnitude;
+    double driveTurn;
     @Override
     public void runOpMode() throws InterruptedException {
         double lastV = 0;
@@ -50,11 +54,11 @@ public class MaxVelocityTest extends LinearOpMode {
 
         Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
 
-        Drivetrain drive = new MecanumDrive(hardwareMap);
+        drive = new MecanumDrive(hardwareMap);
+
         double heading = 0;
 
         waitForStart();
-        WonkyDrive wonk = new WonkyDrive(this, hardwareMap, localizer, drive, false);
 //        timer.startTime();
         while (opModeIsActive()) {
 //            index = 0;
@@ -62,10 +66,22 @@ public class MaxVelocityTest extends LinearOpMode {
                 localizer.initImu();
             }
 
-            double driveTurn = Math.pow(-gamepad2.right_stick_x, 3);
+            driveTurn = Math.pow(-gamepad2.right_stick_x, 3);
             double driveY = Math.pow(-gamepad2.left_stick_x, 3);
             double driveX = Math.pow(-gamepad2.left_stick_y, 3);
-            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, .5);
+            magnitude = Math.hypot(driveX, driveY);
+            if (magnitude==0) {
+                if (!braking) {
+                    braking = true;
+                    brakeHeading = Math.toDegrees(localizer.getHeading());
+                }
+                drive.brake(localizer, driveTurn, .85);
+                telemetry.addData("", drive.getTelemetry());
+            }
+            else {
+                braking = false;
+                drive.drive(magnitude, Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, .85);
+            }
             heading = normalizeDegrees(localizer.getHeading(Localizer.Angle.DEGREES));
             prevAngV = angularV;
             angularV = localizer.getAngularVelocityImu();
@@ -94,6 +110,7 @@ public class MaxVelocityTest extends LinearOpMode {
             lastY = y;
 
             telemetry.addData("Avg Velocity ", avgVel);
+            telemetry.addData("Theta ", localizer.getTheta());
             telemetry.addData("Acc ", acc);
             telemetry.addData("Acc2 ", acc2);
             telemetry.addData("AngV ", angularV);
@@ -101,6 +118,7 @@ public class MaxVelocityTest extends LinearOpMode {
             telemetry.addData("heading ", heading);
             telemetry.addData("max angular v ", maxAngV);
             telemetry.addData("Gamepad Magnitute: ", Math.hypot(driveX, driveY));
+            telemetry.addData("Gamepad Theta: ", Math.toDegrees(Math.atan2(driveY, driveX)));
             telemetry.addData("Velocity ", velocity);
             telemetry.addData("Velocities: ", velocities);
             telemetry.addData("Index: ", index);
@@ -113,6 +131,10 @@ public class MaxVelocityTest extends LinearOpMode {
             telemetry.addData("MaxV: ", maxAvg);
             telemetry.addData("MaxAcc: ", maxAcc);
             telemetry.addData("MaxDecc: ", maxDecc);
+            telemetry.addData("Brake Heading: ", brakeHeading);
+            telemetry.addData("Mag: ", magnitude);
+            telemetry.addData("DriveTurn: ", driveTurn);
+            telemetry.addData("Braking?: ", braking);
             timer.reset();
             telemetry.update();
             localizer.update();

@@ -2,10 +2,14 @@ package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.CommandBase.AprilTagAlign;
 import org.firstinspires.ftc.teamcode.CommandBase.FollowTrajectory;
 import org.firstinspires.ftc.teamcode.CommandBase.MainSailMove;
+import org.firstinspires.ftc.teamcode.CommandBase.MoveTillBackBoard;
+import org.firstinspires.ftc.teamcode.CommandBase.MoveTillPixel;
 import org.firstinspires.ftc.teamcode.CommandBase.PosOuttakePixel;
 import org.firstinspires.ftc.teamcode.CommandBase.PixelHolderFunc;
+import org.firstinspires.ftc.teamcode.CommandBase.PosOuttakePixelPlus;
 import org.firstinspires.ftc.teamcode.CommandBase.SlidesMove;
 import org.firstinspires.ftc.teamcode.CommandBase.Spintake;
 import org.firstinspires.ftc.teamcode.CommandBase.Wait;
@@ -20,8 +24,10 @@ import org.firstinspires.ftc.teamcode.library.autoDrive.math.Bezier;
 import org.firstinspires.ftc.teamcode.library.autoDrive.math.MergedBezier;
 import org.firstinspires.ftc.teamcode.library.autoDrive.math.Point;
 import org.firstinspires.ftc.teamcode.library.commandSystem.ParallelCommand;
+import org.firstinspires.ftc.teamcode.library.commandSystem.RunCommand;
 import org.firstinspires.ftc.teamcode.library.commandSystem.SequentialCommand;
 import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.MecanumDrive;
+import org.firstinspires.ftc.teamcode.library.vision.AprilTagDetect;
 import org.firstinspires.ftc.teamcode.library.vision.SpikeDetect;
 
 public class AutoParent extends LinearOpMode {
@@ -42,7 +48,9 @@ public class AutoParent extends LinearOpMode {
 
     // path stuff
     Bezier spike;
+    Bezier outPlusOne;
     Bezier toAprilTags;
+    Bezier afterPlus;
     Bezier park;
     Bezier bruh;
 
@@ -94,10 +102,16 @@ public class AutoParent extends LinearOpMode {
                                         )
                                 );
                             } else {
-                                spike = new Bezier(90,
-                                        new Point(0, 0),
-                                        new Point(27, -12),
-                                        new Point(27, -2));
+                                spike = new Bezier(88.5,
+                                                new Point(0, 0),
+                                                new Point(25, 0),
+                                                new Point(29, -10),
+                                                new Point(29, 0.5)
+                                        );
+//                                        new Bezier(90,
+//                                                new Point(29, -8),
+//                                                new Point(29, -2)
+//                                        );
                             }
                         } else {
                             if (startPos == StartPos.IN) {
@@ -298,19 +312,26 @@ public class AutoParent extends LinearOpMode {
                         break;
                     case SIX:
                         if (startPos == StartPos.OUT) {
-                            toAprilTags = new MergedBezier(
-                                    new Bezier(-30,
-                                            spike.getEndPoint(),
-                                        new Point(37, 22.5),
-                                        new Point(56, 5),
-                                        new Point(46, -60),
-                                        new Point(32, -65)
-                                    ),
-                                    new Bezier(-65,
-                                    new Point(32, -65),
-                                    new Point(34, -89.2)
-                                )
-                            );
+                            toAprilTags = new Bezier (-90, false,
+//                                    outPlusOne.getEndPoint(),
+                                    spike.getEndPoint(),
+                                    new Point(46, 22.5),
+                                    new Point(75, -20),
+                                    new Point(57, -30),
+                                    new Point(34  , -85));
+//                            new MergedBezier(
+//                                    new Bezier(-90,
+//                                            spike.getEndPoint(),
+//                                        new Point(37, 22.5),
+//                                        new Point(56, 5),
+//                                        new Point(46, -60),
+//                                        new Point(32, -65)
+//                                    ),
+//                                    new Bezier(-90,
+//                                    new Point(32, -65),
+//                                    new Point(20, -91)
+//                                )
+//                            );
                         } else {
                             toAprilTags = new Bezier(-90,
                                     spike.getEndPoint(),
@@ -319,6 +340,27 @@ public class AutoParent extends LinearOpMode {
                             );
                         }
                         break;
+                }
+
+                if (startPos == StartPos.OUT) {
+                    outPlusOne = new Bezier(
+                            -90,
+                            false,
+                            toAprilTags.getEndPoint(),
+                            new Point(22, -90),
+                            new Point(13,-15),
+                            new Point(39, 4)
+                    );
+                    afterPlus = new Bezier(
+                            -90, false,
+                            new Point(37.5, -5),
+                            new Point(70.5, 0),
+                            new Point(55.5, -50),
+                            new Point(39, -86)
+                    );
+                }
+                else {
+                    outPlusOne = new Bezier();
                 }
 
                 bruh = new Bezier(mult * 90, toAprilTags.getEndPoint());
@@ -342,10 +384,14 @@ public class AutoParent extends LinearOpMode {
         SequentialCommand scheduler = new SequentialCommand(
                 // spike
                 new FollowTrajectory(motionPlanner, spike),
-                new Wait(300),
                 new Spintake(false, false),
-                new Wait(400),
-
+//                new Wait(400),
+//                new FollowTrajectory(motionPlanner, outPlusOne),
+//                new ParallelCommand(
+////                        new SlidesMove(Slides.TurnValue.SUPER_RETRACTED.getTicks()),
+//                        new Spintake(true, false),
+//                        new PixelHolderFunc(false, true)
+//                ),
                 // april tag
                 new ParallelCommand(
                         new SequentialCommand(
@@ -355,18 +401,40 @@ public class AutoParent extends LinearOpMode {
                                 )
                         ),
                         new SequentialCommand(
-                                new Wait(800),
+//                                new Wait(800),
                                 new FollowTrajectory(motionPlanner, toAprilTags)
                         )
+//                        new SequentialCommand(
+//                                new Wait(1000),
+//                                new Spintake(false, true),
+//                                new PixelHolderFunc(false, true)
+//                        )
                 ),
-                new FollowTrajectory(motionPlanner, bruh),
-                new Wait(200),
                 new PosOuttakePixel(),
-                new Wait(200),
+                new MoveTillBackBoard(motionPlanner, localizer, red),
                 new PixelHolderFunc(false, false),
-                new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition()),
+                new MainSailMove(MainSail.ArmPos.LESS_RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition()),
                 new SlidesMove(Slides.TurnValue.INTAKE.getTicks()),
-                new FollowTrajectory(motionPlanner, park)
+                new Wait(100),
+                new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition()),
+                new FollowTrajectory(motionPlanner, outPlusOne),
+                new SlidesMove(Slides.TurnValue.INTAKE.getTicks()),
+                new MoveTillPixel(motionPlanner, localizer, red),
+
+                new ParallelCommand(
+                        new FollowTrajectory(motionPlanner, afterPlus),
+                        new Spintake(false, true),
+                        new PixelHolderFunc(false, true)
+                ),
+                new PosOuttakePixelPlus(),
+                new MoveTillBackBoard(motionPlanner, localizer, red),
+                new PixelHolderFunc(true, false),
+                new MainSailMove(MainSail.ArmPos.LESS_RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition()),
+                new SlidesMove(Slides.TurnValue.INTAKE.getTicks()),
+                new Wait(100),
+                new MainSailMove(MainSail.ArmPos.RETRACT.getPosition(), MainSail.HolderPos.RETRACT.getPosition())
+
+//                new FollowTrajectory(motionPlanner, park)
         );
 
             scheduler.init();
@@ -376,9 +444,10 @@ public class AutoParent extends LinearOpMode {
                 motionPlanner.update();
                 Gnocchi.slides.update();
                 scheduler.update();
-
+                telemetry.addData("Intake current draw: ", Gnocchi.intake.getMotorCurrentDraw());
                 telemetry.addData("Current", Gnocchi.slides.getCurrent1() +
                         Gnocchi.slides.getCurrent2() + drive.totalCurrent());
+                telemetry.addData("Drive current: ", drive.totalCurrent());
                 telemetry.addData("", motionPlanner.getTelemetry());
                 telemetry.update();
             }

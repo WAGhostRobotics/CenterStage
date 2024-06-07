@@ -1,12 +1,17 @@
 package org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive;
 
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeDegrees;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.library.autoDrive.Localizer;
+import org.firstinspires.ftc.teamcode.library.autoDrive.TrajectoryFollower;
 import org.firstinspires.ftc.teamcode.library.drivetrain.Drivetrain;
 
 @Config
@@ -26,8 +31,12 @@ public class MecanumDrive implements Drivetrain {
     private double backRightPower;
 
     public static double strafeMultiplier = 1;
+    private final double velocityThreshold = 5;
 
     public final double voltageConstant = 12.3;
+    private double KStaticTurn = 0.18;
+    private double headingErrorThreshold = 2;
+    public static PIDController headingControl = new PIDController(0.0066, 0.00, 0);
 
 
     String telemetry = "";
@@ -46,10 +55,6 @@ public class MecanumDrive implements Drivetrain {
         frontRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         backLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         backRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-//        frontRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-//        frontLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-//        backRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-//        backLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
     }
 
@@ -190,6 +195,19 @@ public class MecanumDrive implements Drivetrain {
     }
 
     public void driveCommon(double magnitude, double theta, double driveTurn){
+//        if (magnitude == 0 && driveTurn == 0) {
+//            frontRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE   );
+//            frontLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//            backRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//            backLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//            return;
+//        }
+//        else {
+//            frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.UNKNOWN);
+//            frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.UNKNOWN);
+//            backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.UNKNOWN);
+//            backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.UNKNOWN);
+//        }
         theta += 45;
 
         //sin and cos of robot movement
@@ -208,4 +226,42 @@ public class MecanumDrive implements Drivetrain {
         return frontLeft.getCurrent(CurrentUnit.AMPS) + frontRight.getCurrent(CurrentUnit.AMPS) +
                 backLeft.getCurrent(CurrentUnit.AMPS) + backRight.getCurrent(CurrentUnit.AMPS);
     }
+
+    @Override
+    public void brake(Localizer localizer, double driveTurn, double movementPower) {
+        double theta = localizer.getTheta();
+        theta = normalizeDegrees(theta + 180);
+        double velocity = localizer.getAvgVelocity();
+        double magnitude = TrajectoryFollower.Kv*velocity;
+        drive(magnitude, theta, driveTurn, movementPower);
+    }
+
+    @Override
+    public void brake(Localizer localizer, double movementPower) {
+        double theta = localizer.getTheta();
+        theta = normalizeDegrees(theta + 180);
+        if (Math.abs(localizer.getAvgVelocity()) > velocityThreshold) {
+            double velocity = localizer.getAvgVelocity();
+            double magnitude = TrajectoryFollower.Kv*velocity;
+            drive(magnitude, theta, 0, movementPower);
+        }
+
+    }
+//    @Override
+//    public void brake(Localizer localizer, double movementPower, double heading) {
+//        double theta = localizer.getTheta();
+//        theta = normalizeDegrees(theta + 180);
+//        double headingError = normalizeDegrees(heading - Math.toDegrees(localizer.getHeading()));
+//        double driveTurn = headingControl.calculate(0, headingError);
+//        driveTurn = (Math.abs(headingError) > headingErrorThreshold) ? driveTurn + Math.signum(driveTurn)*KStaticTurn : 0;
+//        if (Math.abs(localizer.getAvgVelocity()) > velocityThreshold || Math.abs(driveTurn)>0) {
+//            double velocity = localizer.getAvgVelocity();
+//            double magnitude = TrajectoryFollower.Kv*velocity;
+//            drive(magnitude, theta, driveTurn, movementPower);
+//        }
+//        telemetry = "DriveTurn: " + driveTurn +
+//                "\nHeading Error: " + headingError +
+//                "\n Target: " + heading +
+//                "\n Current: " + Math.toDegrees(localizer.getHeading());
+//    }
 }

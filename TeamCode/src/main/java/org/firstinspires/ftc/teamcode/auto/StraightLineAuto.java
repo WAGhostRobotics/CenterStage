@@ -13,14 +13,17 @@ import org.firstinspires.ftc.teamcode.library.autoDrive.Trajectory;
 import org.firstinspires.ftc.teamcode.library.autoDrive.TrajectoryFollower;
 import org.firstinspires.ftc.teamcode.library.autoDrive.TwoWheelLocalizer;
 import org.firstinspires.ftc.teamcode.library.autoDrive.math.Bezier;
+import org.firstinspires.ftc.teamcode.library.autoDrive.math.PathPoint;
 import org.firstinspires.ftc.teamcode.library.commandSystem.SequentialCommand;
 import org.firstinspires.ftc.teamcode.library.drivetrain.mecanumDrive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.library.autoDrive.math.Point;
 
+import java.nio.file.Path;
+
 @Autonomous
 public class StraightLineAuto extends LinearOpMode {
     Bezier curvyTest;
-    Bezier straightTest;
+    Trajectory straightTest;
     Bezier strafeTest;
     Bezier notSoStraightTest;
     Trajectory traj;
@@ -49,11 +52,7 @@ public class StraightLineAuto extends LinearOpMode {
                     new Point(5, 33.6),
                     new Point(27, 19)
             );
-            straightTest = new Bezier(
-                    0,
-                    new Point(0, 0),
-                    new Point(80, 0)
-            );
+
             notSoStraightTest = new Bezier(
                     0,
                     new Point(0, 0),
@@ -67,8 +66,15 @@ public class StraightLineAuto extends LinearOpMode {
                     new Point(0, 0),
                     new Point(0, 80)
             );
-            traj = new Trajectory(notSoStraightTest, localizer, 0);
-            trajectoryFollower = new TrajectoryFollower(drive, localizer, traj);
+            straightTest = new Trajectory(
+                    0.0,
+                    new PathPoint(0, 0),
+                    new PathPoint(60, 0),
+                    new PathPoint(60, -60),
+                    new PathPoint(28, -60),
+                    new PathPoint(28, 0)
+            );
+            trajectoryFollower = new TrajectoryFollower(drive, localizer, straightTest, hardwareMap);
             telemetry.addData("", trajectoryFollower.getTelemetry());
             telemetry.update();
         }

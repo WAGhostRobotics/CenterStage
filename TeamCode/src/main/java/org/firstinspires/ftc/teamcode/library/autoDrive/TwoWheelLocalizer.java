@@ -17,7 +17,7 @@ public class TwoWheelLocalizer extends Localizer {
 
     public static double PERPENDICULAR_X = 3;
     public static double PARALLEL_Y = 0;
-
+    //-8, -8.5
     //-3.088
     //-8.696
 

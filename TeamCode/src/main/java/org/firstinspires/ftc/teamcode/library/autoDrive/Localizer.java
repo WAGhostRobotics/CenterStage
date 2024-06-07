@@ -50,6 +50,7 @@ public class Localizer {
     private ElapsedTime time;
     private double elapsedTime;
     private double velocity;
+    private double theta;
     private double avgVel;
     private double lastVelocity;
     private double acceleration;
@@ -130,9 +131,11 @@ public class Localizer {
         x += relX * Math.cos(heading) - relY * Math.sin(heading);
         y += relY * Math.cos(heading) + relX * Math.sin(heading);
 
+
         velocity = Math.sqrt(
                 Math.pow((x-xPrev)/elapsedTime, 2) + Math.pow((y-yPrev)/elapsedTime, 2)
         );
+        theta = Math.toDegrees(Math.atan2(y-yPrev, x-xPrev)) - getHeadingImu();
 
         // Average velocity - running average of 10 values
         if (index<length) {
@@ -241,6 +244,9 @@ public class Localizer {
 
     public double getHeadingImu() {
         return imu.getCurrentHeading();
+    }
+    public double getTheta() {
+        return theta;
     }
 
     public double getAngularVelocityImu() {

@@ -45,7 +45,7 @@ public class AprilTagAlign extends Command {
             }
         }
         if (targetDetection == null || targetDetection.center == null) {
-            motionPlanner.startTrajectory(new Bezier(0,
+            motionPlanner.startTrajectory(new Bezier(Math.toDegrees(localizer.getHeadingImu()),
                     new Point(localizer.getX(), localizer.getY()),
                     // y + x is intentional; the localizer and AprilTag axes are reversed
                     new Point(localizer.getX()+2, localizer.getY())
@@ -56,7 +56,7 @@ public class AprilTagAlign extends Command {
             u_t = (targetDetection.center.x - 640)  / 640 * 100 * kP;
             xTranslation = u_t + Math.signum(u_t) * kStatic;
             // yTranslation = targetDetection.pose.y * INCHES_PER_METER;
-            motionPlanner.startTrajectory(new Bezier(0,
+            motionPlanner.startTrajectory(new Bezier(Math.toDegrees(localizer.getHeadingImu()),
                     new Point(localizer.getX(), localizer.getY()),
                     // y + x is intentional; the localizer and AprilTag axes are reversed
                     new Point(localizer.getX(), localizer.getY()-xTranslation)

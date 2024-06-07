@@ -30,14 +30,20 @@ public class MotionPlanner {
 
     //    private PIDController translationalControlEnd = new PIDController(0.022,0.001,0.03);
 //    public static PIDController translationalControlEnd = new PIDController(0.025,0.02,0.1);
-    public static PIDController translationalControlEndX = new PIDController(0.003,0.0008,0.0);
+    public static PIDController translationalControlEndX = new PIDController(0.015,0.0003,0.0);
 //    public static PIDController translationalControlEndX = new PIDController(0.01,0.001,0);
-    public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
-    public static PIDController headingControlEnd = new PIDController(0.0001, 0.00005, 0); // hope
+//    public static PIDController translationalControlEndY = new PIDController(translationalControlEndX.getP(), translationalControlEndX.getI(), translationalControlEndX.getD());
+    public static PIDController translationalControlEndY = new PIDController(0.01, 0.001, 0);
+    public static PIDController headingControlEnd = new PIDController(0.022, 0.009, 0); // hope
 
     
     private int index;
     private double x;
+    private double x_error;
+    private double y_error;
+    private double translationalError;
+    private final double angularVelocityThreshold = 6; // tocheck
+
     private double y;
     private double theta;
     private double magnitude;
@@ -71,12 +77,15 @@ public class MotionPlanner {
 
 
     private double movementPower = 0.8;
-    private double endMovementPower = 0.48;
-    private double turnPowerEnd = 0.35;
+//    private double endMovementPower = 0.48;
+//    private double turnPowerEnd = 0.35;
     //28
-    public static double kStatic = 0.32; //.19
-    private final double translational_error = 1;
-    private final double heading_error = 3;
+    public static double kStatic_X = 0.15; //.19
+    public static double kStatic_Y = 0.5; //.19
+    public static double kStatic_Turn = 0.17; //.19
+    public static double kStatic_Turn_End = 0.17;
+    private final double permissible_translational_error = 1;
+    private final double heading_error = 2;
     private final double endTrajThreshhold = 10;
     public static  double tIncrement = 0.05;
 
@@ -149,13 +158,9 @@ public class MotionPlanner {
 
     public String getTelemetry(){
         return "Index: " + index +
-                "\n Theta: " + theta +
-                "\n Magnitude: " + magnitude +
-                "\n Driveturn: " + driveTurn +
                 "\n Targetheading: " + targetHeading +
                 "\n Derivative: " + derivative.getX() + ", " + derivative.getY() + " " +
                 "\n Derivative: " + Math.hypot(derivative.getX(), derivative.getY()) + " " +
-                "\n Heading Error: " + (targetHeading-currentHeading) +
                 "\n Approx Length: " + (spline.approximateLength()) +
 //                "\n Phase: " + end +
 //                "\n Stop " + (distanceLeft < estimatedStopping) +
@@ -172,7 +177,19 @@ public class MotionPlanner {
                 "\n Loop Rate " + numLoops/loopTime.seconds() +
                 "\n Heading: " + currentHeading +
                 "\n X: " + localizer.getX() +
-                "\n Y: " + localizer.getY();
+                "\n Y: " + localizer.getY() +
+                "\n X_error: " + x_error +
+                "\n Y_error: " + y_error +
+                "\n xPower: " + x_power +
+                "\n yPower: " + y_power +
+                "\n theta: " + y_power +
+                "\n Theta: " + theta +
+                "\n Magnitude: " + magnitude +
+                "\n DriveTurn: " + driveTurn +
+                "\n Translational Error: " + translationalError +
+                "\n Heading Error: " + (targetHeading-currentHeading) +
+                "\n Reached Translational: " + reachedTranslationalTarget() +
+                "\n Reached Heading: " + reachedHeadingTarget();
     }
 
     public double getPerpendicularError(){
@@ -208,10 +225,10 @@ public class MotionPlanner {
         }
         target = spline.getCurvePoints()[index];
 //        targetHeading = (!end)? spline.getCurveHeadings()[index] : spline.getHeading(1);
-        targetHeading = spline.getCurveHeadings()[index];
+        targetHeading = (end) ? spline.heading : spline.getCurveHeadings()[index];
         // This line might be a temporary fix. Change getHeading function in bezier.
         derivative = spline.getCurveDerivatives()[index];
-        if(!reachedTranslationalTarget()){
+        if(!isFinished()){
 
             if(index >=estimatedStopping){
 
@@ -222,24 +239,32 @@ public class MotionPlanner {
                 }
                 end = true;
 
-                x_power = translationalControlEndX.calculate(0, spline.getEndPoint().getX()-x);
-                y_power = translationalControlEndY.calculate(0, spline.getEndPoint().getY()-y);
+                x_error = spline.getEndPoint().getX() - x;
+                y_error = spline.getEndPoint().getY() - y;
+                translationalError = Math.hypot(x_error, y_error);
+                theta = normalizeDegrees(Math.toDegrees(Math.atan2(y_error, x_error)) - currentHeading);
+                x_error = Math.cos(Math.toRadians(theta))*translationalError;
+                y_error = Math.sin(Math.toRadians(theta))*translationalError;
+                x_power = translationalControlEndX.calculate(0, x_error);
+                y_power = translationalControlEndY.calculate(0, y_error);
+                x_power = (Math.abs(x_error)>permissible_translational_error) ? x_power + Math.signum(x_power)* kStatic_X : 0;
+                y_power = (Math.abs(y_error)>permissible_translational_error) ? y_power + Math.signum(y_power)* kStatic_Y : 0;
+//                x_rotated = x_power * Math.cos(Math.toRadians(currentHeading)) + y_power * Math.sin(Math.toRadians(currentHeading));
+//                y_rotated =  -x_power * Math.sin(Math.toRadians(currentHeading)) + y_power * Math.cos(Math.toRadians(currentHeading));
+//                theta = Math.toDegrees(Math.atan2(y_rotated, x_rotated));
+                // Calculate theta before adding KStatics because KStatics for x and y are not the same
 
-                x_power = (!reachedXTarget()) ? (x_power + Math.signum(x_power) * kStatic): 0;
-                y_power = (!reachedYTarget()) ? (y_power + Math.signum(y_power) * kStatic): 0;
+//                x_power = (!reachedXTarget()) ? (x_power + Math.signum(x_power) * kStatic_X): 0;
+//                y_power = (!reachedYTarget()) ? (y_power + Math.signum(y_power) * kStatic_Y): 0;
+//                x_rotated = x_power * Math.cos(Math.toRadians(currentHeading)) + y_power * Math.sin(Math.toRadians(currentHeading));
+//                y_rotated =  -x_power * Math.sin(Math.toRadians(currentHeading)) + y_power * Math.cos(Math.toRadians(currentHeading));
 
-                x_rotated = x_power * Math.cos(Math.toRadians(currentHeading)) + y_power * Math.sin(Math.toRadians(currentHeading));
-                y_rotated =  -x_power * Math.sin(Math.toRadians(currentHeading)) + y_power * Math.cos(Math.toRadians(currentHeading));
 
-                magnitude = Math.hypot(x_rotated, y_rotated);
-                theta = Math.toDegrees(Math.atan2(y_rotated, x_rotated));
-                targetHeading = (!reachedTranslational) ? spline.getCurveHeadings()[spline.pointCount-1] : spline.heading;
+                magnitude = Math.hypot(x_power, y_power);
                 driveTurn = headingControlEnd.calculate(0, getHeadingError());
 
-                driveTurn = (!reachedHeadingTarget()) ? (driveTurn + Math.signum(driveTurn) * kStatic): 0;
-                double movementPowerFinal = (!reachedTranslational) ? endMovementPower : turnPowerEnd;
-                drive.driveMax(magnitude, theta, driveTurn, endMovementPower, voltage);
-//                drive.drive(magnitude, theta, driveTurn, movementPower, voltage);
+                driveTurn = (!reachedHeadingTarget()) ? (driveTurn + Math.signum(driveTurn) * kStatic_Turn_End): 0;
+                drive.drive(magnitude, theta, driveTurn, movementPower, voltage);
 
             } else {
 
@@ -306,8 +331,6 @@ public class MotionPlanner {
             }
 
         }else{
-            reachedTranslational = true;
-            targetHeading = spline.heading;
             if(reachedXTarget()){
                 translationalControlEndX.reset();
             }
@@ -319,12 +342,7 @@ public class MotionPlanner {
             if(reachedHeadingTarget()){
                 headingControlEnd.reset();
             }
-            else {
-                driveTurn = headingControlEnd.calculate(0, getHeadingError());
-                drive.driveMax(0, 0, driveTurn, turnPowerEnd, voltage);
-            }
-            if (isFinished())
-                drive.drive(0, 0, 0, 0);
+            drive.drive(0, 0, 0, 0);
         }
 
         numLoops++;
@@ -369,15 +387,15 @@ public class MotionPlanner {
     }
 
     private boolean reachedXTarget(){
-        return Math.abs(spline.getEndPoint().getX()-x)<= translational_error;
+        return Math.abs(spline.getEndPoint().getX()-x)<= permissible_translational_error;
     }
 
     private boolean reachedYTarget(){
-        return Math.abs(spline.getEndPoint().getY()-y)<= translational_error;
+        return Math.abs(spline.getEndPoint().getY()-y)<= permissible_translational_error;
     }
 
     private boolean reachedHeadingTarget(){
-        return (Math.abs(targetHeading - currentHeading)<= heading_error);
+        return Math.abs(normalizeDegrees(targetHeading- currentHeading))< heading_error && Math.abs(localizer.getAngularVelocityImu())<=angularVelocityThreshold;
 //        return (Math.abs(driveTurn)<=0.15);
     }
 

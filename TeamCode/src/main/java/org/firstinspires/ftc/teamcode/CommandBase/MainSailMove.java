@@ -14,9 +14,9 @@ public class MainSailMove extends SequentialCommand {
         super(new ParallelCommand(
                 new RunCommand(() -> Gnocchi.mainSail.moveArm(armPos)),
                 new RunCommand(() -> Gnocchi.mainSail.movePixelHolder(holderPos))),
-                new ParallelCommand(
-                        new RunCommand(() -> Gnocchi.mainSail.out()),
-                        new Wait(200)),
+//                new ParallelCommand(
+//                        new RunCommand(() -> Gnocchi.mainSail.out()),
+//                        new Wait(200)),
                 new RunCommand(() -> Gnocchi.mainSail.stop()
                 )
         );

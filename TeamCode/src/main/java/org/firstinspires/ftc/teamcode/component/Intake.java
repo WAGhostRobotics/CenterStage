@@ -2,12 +2,15 @@ package org.firstinspires.ftc.teamcode.component;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 public class Intake {
 
-    private DcMotor intake;
+    private DcMotorEx intake;
     private Servo height;
     private CRServo sushi;
     private final double power = 1;
@@ -16,7 +19,8 @@ public class Intake {
         RETRACT(0.65),
         INTAKE(0.1916),
         AUTO_INTAKE(0.22),
-        PIXEL1(0.33),
+        PIXEL1(0.30),
+        AUTO_INTAKE_NEW(0.45), // THis one does not extend as far. So that it does not get stuck because of the team element
         PIXEL2(0.2),
         PIXEL3(0.3),
         PIXEL4(0.4),
@@ -33,7 +37,7 @@ public class Intake {
     }
 
     public void init(HardwareMap hwMap) {
-        intake = hwMap.get(DcMotor.class, "intake");
+        intake = hwMap.get(DcMotorEx.class, "intake");
         height = hwMap.get(Servo.class, "height");
         sushi = hwMap.get(CRServo.class, "sushi");
 //        sushi.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -52,7 +56,7 @@ public class Intake {
 
     public void slowOut() {
         intake.setPower(-0.3);
-        sushi.setPower(-0.3);
+        sushi.setPower(-0.4);
     }
 
     public void stop() {
@@ -72,7 +76,14 @@ public class Intake {
         height.setPosition(goTo.getPosition());
     }
 
+    public double getMotorCurrentDraw() {
+        return intake.getCurrent(CurrentUnit.AMPS);
+    }
     public double getHeight() {
         return height.getPosition();
+    }
+
+    public void setSushi(double power) {
+        sushi.setPower(power);
     }
 }

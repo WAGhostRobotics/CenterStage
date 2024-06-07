@@ -17,6 +17,7 @@ public class MainSail {
 
     public enum ArmPos {
         RETRACT(0.1094),
+        LESS_RETRACT(0.13),
         INTAKE(0.1094),
         PLACE(0.75),
         MID(0.2044),

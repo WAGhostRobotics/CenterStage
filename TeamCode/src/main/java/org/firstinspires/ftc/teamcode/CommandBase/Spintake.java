@@ -13,6 +13,7 @@ public class Spintake extends Command {
 
     ElapsedTime timer;
     private int pixelTime = 1000;
+    private int outTime = 500;
 
     public Spintake(boolean intake, boolean cri) {
         this.intake = intake;
@@ -29,18 +30,32 @@ public class Spintake extends Command {
             timer.reset();
         }
         if (intake) {
+            Gnocchi.intake.setHeight(Intake.IntakeHeight.PIXEL1);
             Gnocchi.intake.in();
         } else if (cri) {
-            Gnocchi.intake.setHeight(Intake.IntakeHeight.INTAKE);
+            // Get rid of extras in pluses from stack
+            Gnocchi.intake.setHeight(Intake.IntakeHeight.RETRACT);
             Gnocchi.intake.out();
         } else {
-            Gnocchi.intake.setHeight(Intake.IntakeHeight.AUTO_INTAKE);
+            // This is to spit out the purple pixel
+            Gnocchi.intake.setHeight(Intake.IntakeHeight.AUTO_INTAKE_NEW);
             Gnocchi.intake.slowOut();
         }
     }
 
     @Override
     public void update() {
+//        if (Gnocchi.intake.getMotorCurrentDraw()>=2.20) {
+//            ElapsedTime outTimer;
+//            outTimer = new ElapsedTime();
+//            while (outTimer.milliseconds() <= outTime) {
+//                Gnocchi.intake.out();
+//            }
+//            timer.reset();
+//            outTimer.reset();
+//            Gnocchi.intake.in();
+//        }
+
     }
 
     @Override

@@ -6,6 +6,7 @@ public class PathPoint {
     double angularV;
     double dt;
     double acc;
+    boolean brake;
 
     public Point point;
     public PathPoint(double x, double y, double velocity, double acc, double heading, double angularV, double dt) {
@@ -15,28 +16,21 @@ public class PathPoint {
         this.acc = acc;
         this.angularV = angularV;
         this.dt = dt;
+        this.brake = false;
     }
 
-    public PathPoint(Point p, double heading) {
-        point = new Point(p.getX(), p.getY());
+    public PathPoint(double x, double y) {
+        point = new Point(x, y);
+        this.brake = false;
+
+    }
+    public PathPoint(double x, double y, double heading) {
+        point = new Point(x, y);
         this.heading = heading;
+        this.brake = false;
 
     }
-    public PathPoint (PathPoint p) {
-        this.point = new Point(p.point.getX(), p.point.getY());
-        this.velocity = p.getVelocity();
-        this.acc = p.getAcc();
-        this.heading = p.getHeading();
-        this.angularV = p.getAngularV();
-        this.dt = p.getDt();
-    }
 
-    public PathPoint(Point p, double velocity, double heading) {
-        point = new Point(p.getX(), p.getY());
-        this.heading = heading;
-        this.velocity = velocity;
-
-    }
     public void setX(double x) {
         this.point.x = x;
     }
@@ -79,5 +73,11 @@ public class PathPoint {
 
     public void setAngularV(double angularV) {
         this.angularV = angularV;
+    }
+    public void setBrake(boolean brake) {
+        this.brake = brake;
+    }
+    public boolean getBrake() {
+        return brake;
     }
 }

@@ -20,12 +20,15 @@ public class Slides {
     private double stallCurrent = 5.9;
 
     private PIDController slideController = new PIDController(0.003, 0.0007,0); //0.006
+    public static double feedForward = 0.1;
+
 
     public enum TurnValue {
         SUPER_RETRACTED(-100),
         RETRACTED(350),
         INTAKE(0),
-        PLACE(800), // 880
+        PLACE(750), // 880
+        PLACE_PLUS(900),
         CLIMB(1960); //880
 
         int ticks;
@@ -82,6 +85,7 @@ public class Slides {
         }else{
             double pw = Range.clip(slideController.calculate(0, slide1.getTargetPosition() - slide1.getCurrentPosition()), -1, 1);
             // sets power and mode
+//            pw = pw + feedForward*(slide1.getCurrentPosition());
             slide1.setPower(pw);
             slide2.setPower(pw);
           }

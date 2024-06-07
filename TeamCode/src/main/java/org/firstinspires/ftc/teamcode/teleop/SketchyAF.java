@@ -61,8 +61,7 @@ public class SketchyAF extends LinearOpMode {
         IntakePixel intakePixel = new IntakePixel();
         Localizer localizer = new TwoWheelLocalizer(this, hardwareMap);
 
-        Drivetrain drive = new MecanumDrive(hardwareMap);
-        WonkyDrive wonk = new WonkyDrive(this, hardwareMap, localizer, drive, false);
+        MecanumDrive drive = new MecanumDrive(hardwareMap);
 
         waitForStart();
 
@@ -87,7 +86,7 @@ public class SketchyAF extends LinearOpMode {
             double driveTurn = Math.pow(-gamepad2.right_stick_x, 3);
             double driveY = Math.pow(-gamepad2.left_stick_x, 3);
             double driveX = Math.pow(-gamepad2.left_stick_y, 3);
-//            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, movementPwr);
+            drive.drive(Math.hypot(driveX, driveY), Math.toDegrees(Math.atan2(driveY, driveX)), driveTurn, movementPwr);
 
             if (stick.wasJustReleased() && movementPwr == 1) {
                 movementPwr = 0.5;
@@ -97,7 +96,6 @@ public class SketchyAF extends LinearOpMode {
             if (driveControllerY.wasJustReleased()) {
                 localizer.initImu();
             }
-            wonk.drive(gamepad2, movementPwr);
 
 //            //re-initializes imu to correct heading if teleop starts at the wrong heading
 //            if (gamepad2.left_stick_button){
@@ -221,9 +219,17 @@ public class SketchyAF extends LinearOpMode {
 
             intakePixel.update();
             bReader.readValue();
-
+            localizer.update();
             telemetry.addData("Finished", intakePixel.isFinished());
             telemetry.addData("Slides", Gnocchi.slides.getTicks());
+            telemetry.addData("X: ", localizer.getX());
+            telemetry.addData("Y: ", localizer.getY());
+            telemetry.addData("Heading: " , localizer.getHeading());
+            telemetry.addData("RawX: ", localizer.getRawX());
+            telemetry.addData("RawY: ", localizer.getRawY());
+            telemetry.addData("Current Draw for spinTake: ", Gnocchi.intake.getMotorCurrentDraw());
+            telemetry.addData("Drivetrain current: ", drive.totalCurrent());
+            telemetry.addData("Drivetrain current: ", drive.totalCurrent());
             telemetry.update();
         }
     }

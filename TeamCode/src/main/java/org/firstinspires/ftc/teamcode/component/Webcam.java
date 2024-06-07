@@ -8,6 +8,7 @@ import org.firstinspires.ftc.robotcore.external.matrices.MatrixF;
 import org.firstinspires.ftc.teamcode.library.vision.AprilTagDetect;
 import org.firstinspires.ftc.teamcode.library.vision.PixelDetect;
 import org.firstinspires.ftc.teamcode.library.vision.SpikeDetect;
+import org.opencv.core.Point;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -24,7 +25,7 @@ public class Webcam {
     OpenCvWebcam webcam;
 
     SpikeDetect spikePipe;
-    // AprilTagDetect aprilTagPipe;
+    public AprilTagDetect aprilTagPipe;
     PixelDetect pixelPipe;
 
     // Lens intrinsics
@@ -45,12 +46,17 @@ public class Webcam {
 
     SpikeDetect.Location location = null;
 
-    private boolean redAlliance;
-    private boolean left;
+    private final boolean redAlliance;
+    private final boolean left;
 
     public Webcam(boolean redAlliance, boolean left){
         this.redAlliance = redAlliance;
         this.left = left;
+    }
+
+    public Webcam() {
+        this.redAlliance = false;
+        this.left = false;
     }
 
     public void init(HardwareMap hardwareMap){
@@ -62,7 +68,7 @@ public class Webcam {
 
         // pipelines
         spikePipe = new SpikeDetect(redAlliance, left);
-        // aprilTagPipe = new AprilTagDetect(tagsize, fx, fy, cx, cy);
+        aprilTagPipe = new AprilTagDetect(tagsize, fx, fy, cx, cy);
         pixelPipe = new PixelDetect();
 
         webcam.setPipeline(spikePipe);
@@ -129,7 +135,10 @@ public class Webcam {
                 break;
         }
     }
-
+    public Point getPixelLocation() {
+        webcam.setPipeline(pixelPipe);
+        return pixelPipe.getCenter();
+    }
     public AprilTagLocation getAprilTagLocation() {
         return aprilTagLocation;
     }
@@ -170,13 +179,13 @@ public class Webcam {
         FIVE (5),
         SIX (6);
 
-        int id;
+        public int id;
 
         AprilTagLocation(int id){
             this.id = id;
         }
 
-        int getId(){
+        public int getId(){
             return id;
         }
     }

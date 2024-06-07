@@ -15,6 +15,7 @@ public class Bezier {
 
     public double heading;
     public int pointCount;
+    private boolean headingFollower;
 
     private Point[] curvePoints;
     private Point[] curveDerivatives;
@@ -32,7 +33,16 @@ public class Bezier {
         this.waypoints = waypoints;
         this.heading = normalizeDegrees(heading);
         generateCurve();
+        this.headingFollower = true;
     }
+
+    public Bezier(double heading, boolean headingFollower, Point... waypoints) {
+        this.headingFollower = headingFollower;
+        this.waypoints = waypoints;
+        this.heading = normalizeDegrees(heading);
+        generateCurve();
+    }
+
 
     public Bezier(){}
 
@@ -76,7 +86,10 @@ public class Bezier {
     public double getHeading(double t){
 //        if (t>= 1)
 //            return heading;
-        return Math.toDegrees(Math.atan2(getDerivative(t).getY(), getDerivative(t).getX()));
+        if (headingFollower)
+            return Math.toDegrees(Math.atan2(getDerivative(t).getY(), getDerivative(t).getX()));
+        else
+            return this.heading;
     }
 
 

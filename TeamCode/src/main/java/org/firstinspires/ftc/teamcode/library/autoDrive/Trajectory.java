@@ -5,44 +5,45 @@ import org.firstinspires.ftc.teamcode.library.autoDrive.math.PathPoint;
 import org.firstinspires.ftc.teamcode.library.autoDrive.math.Segment;
 
 public class Trajectory {
-    Bezier bezier;
-    Localizer localizer;
+    PathPoint[] pathPoints;
     double endVelocity;
+    double targetHeading;
 
 
 
     public Segment[] segments;
     double initialHeading;
-    public Trajectory(Bezier bezier, Localizer localizer, double endVelocity) {
-        this.localizer = localizer;
-        this.bezier = bezier;
-        this.segments = new Segment[bezier.pointCount-1];
-        this.endVelocity = endVelocity;
+//    public Trajectory(double endVelocity, PathPoint... pathPoints) {
+//        this.pathPoints = pathPoints;
+//        this.segments = new Segment[pathPoints.length-1];
+//        this.endVelocity = endVelocity;
+//        generateTrajectory();
+//    }
+    public Trajectory(double heading, PathPoint... pathPoints) {
+        this.pathPoints = pathPoints;
+        this.segments = new Segment[pathPoints.length-1];
+        this.endVelocity = 0;
+        this.targetHeading = heading;
         generateTrajectory();
     }
 
     private void generateTrajectory() {
-        double tIncrement = 1.0/(bezier.pointCount-1);
-        double t = tIncrement;
-        PathPoint p0 = new PathPoint(bezier.getPoint(0), 0, localizer.getHeading());
-        PathPoint p1 = new PathPoint(bezier.getPoint(t), bezier.getHeading(t));
         int segLen = segments.length;
         for (int i =0;i<segLen;i++) {
+            PathPoint p0 = pathPoints[i];
+            PathPoint p1 = pathPoints[i+1];
+            p0.setHeading(Math.toDegrees(
+                    Math.atan2(p1.point.getY()-p0.point.getY(), p1.point.getX()-p0.point.getX())));
             segments[i] = new Segment(p0, p1);
-            p0 = segments[i].pathPoints[segments[i].pathPoints.length-1];
-            t += tIncrement;
-            p1 = new PathPoint(bezier.getPoint(t), bezier.getHeading(t));
         }
-        segments[segLen-1].pathPoints[segments[segLen-1].pathPoints.length-1].setVelocity(endVelocity);
-//        segments[segLen-1].pathPoints[segments[segLen-1].pathPoints.length-1].setHeading(10);
-
-        for (int i =segLen-1; i>=0; i--) {
-            segments[i].reverseFF();
-//            if (i!=0) {
-//                int pathPointsLast = segments[i-1].pathPoints.length-1;
-//                segments[i-1].pathPoints[pathPointsLast].setVelocity(segments[i].getLastVelocity());
-//            }
+        int i=0;
+        for (; i<segLen-1; i++) {
+            int lastPathPoint = segments[i].pathPoints.length-1;
+            segments[i].pathPoints[lastPathPoint].setHeading(
+                    segments[i+1].pathPoints[0].getHeading()
+            );
         }
+        segments[i].pathPoints[segments[i].pathPoints.length-1].setHeading(targetHeading);
     }
 
 }
