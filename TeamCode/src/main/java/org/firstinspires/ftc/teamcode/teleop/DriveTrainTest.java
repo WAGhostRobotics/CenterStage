@@ -15,6 +15,7 @@ public class DriveTrainTest extends LinearOpMode {
         MecanumDrive drive = new MecanumDrive(hardwareMap);
         Imu imu = new Imu(hardwareMap);
         imu.initImuThread(this);
+        
         waitForStart();
         while (opModeIsActive()) {
             double heading = imu.getHeading();
