@@ -18,7 +18,7 @@ public class Imu {
     private final Object imuSync = new Object();
 
     @GuardedBy("imuSync")
-    private BHI260IMU imu;
+    private IMU imu;
     private double heading = 0;
     private double angularVelocity = 0;
 
@@ -51,7 +51,7 @@ public class Imu {
         imuThread.start();
     }
 
-    public BHI260IMU getImu() {
+    public IMU getImu() {
         return imu;
     }
 
@@ -62,21 +62,18 @@ public class Imu {
 
 
     public void initIMU() {
-        synchronized (imuSync) {
-            imu = hwMap.get(BHI260IMU.class, "imu");
-            imu.initialize(new IMU.Parameters(
-                            new RevHubOrientationOnRobot(
-                                    RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD,
-                                    RevHubOrientationOnRobot.UsbFacingDirection.UP
-                            )
-                    )
-            );
-        }
+        imu = hwMap.get(IMU.class, "imu");
+        imu.initialize(new IMU.Parameters(
+                        new RevHubOrientationOnRobot(
+                                RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD,
+                                RevHubOrientationOnRobot.UsbFacingDirection.UP
+                        )
+                )
+        );
         imu.resetYaw();
-        heading = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
     }
 
     public double getHeading() {
-        return heading;
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
     }
 }
